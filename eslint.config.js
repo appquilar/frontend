@@ -9,6 +9,7 @@ export default tseslint.config(
     ignores: [
       "dist",
       "coverage",
+      "coverage-*",
       "coverage-e2e",
       "coverage-e2e-full",
       ".e2e-coverage",

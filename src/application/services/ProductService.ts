@@ -87,8 +87,11 @@ export class ProductService {
         return this.repository.checkAvailability(productId, startDate, endDate, quantity);
     }
 
-    async getInventorySummary(productId: string): Promise<ProductInventorySummary | null> {
-        return this.repository.getInventorySummary(productId);
+    async getInventorySummary(
+        productId: string,
+        range?: { startDate?: string | null; endDate?: string | null }
+    ): Promise<ProductInventorySummary | null> {
+        return this.repository.getInventorySummary(productId, range);
     }
 
     async getInventoryAllocations(productId: string): Promise<InventoryAllocation[]> {

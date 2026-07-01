@@ -3,10 +3,11 @@ import type { InventoryAllocation, InventoryUnit } from "@/domain/models/Product
 interface SerializedInventoryAgendaProps {
     units: InventoryUnit[];
     allocations: InventoryAllocation[];
+    startDate: string;
+    endDate: string;
 }
 
-const DESKTOP_DAYS = 14;
-const MOBILE_DAYS = 7;
+const MAX_TIMELINE_DAYS = 62;
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -50,9 +51,19 @@ const overlapsDay = (allocation: InventoryAllocation, day: Date) => {
     return allocationStart <= endOfDay(day) && allocationEnd >= startOfDay(day);
 };
 
-const getTimelineDays = (daysToShow: number) => {
+const getTimelineDays = (startDateValue: string, endDateValue: string) => {
     const today = startOfDay(new Date());
-    return Array.from({ length: daysToShow }, (_value, index) => addDays(today, index));
+    const parsedStartDate = startOfDay(new Date(`${startDateValue}T00:00:00`));
+    const parsedEndDate = startOfDay(new Date(`${endDateValue}T00:00:00`));
+    const startDate = Number.isNaN(parsedStartDate.getTime()) ? today : parsedStartDate;
+    const endDate = Number.isNaN(parsedEndDate.getTime()) ? startDate : parsedEndDate;
+    const diffDays = Math.max(
+        0,
+        Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+    );
+    const daysToShow = Math.min(diffDays + 1, MAX_TIMELINE_DAYS);
+
+    return Array.from({ length: daysToShow }, (_value, index) => addDays(startDate, index));
 };
 
 const getUpcomingAllocationsForUnit = (
@@ -85,16 +96,17 @@ const TimelineLegend = () => (
 const SerializedInventoryAgenda = ({
     units,
     allocations,
+    startDate,
+    endDate,
 }: SerializedInventoryAgendaProps) => {
-    const desktopDays = getTimelineDays(DESKTOP_DAYS);
-    const mobileDays = getTimelineDays(MOBILE_DAYS);
+    const timelineDays = getTimelineDays(startDate, endDate);
 
     return (
         <div className="space-y-4 rounded-xl border border-border p-4">
             <div className="space-y-1">
                 <p className="font-medium">Calendario de ocupacion</p>
                 <p className="text-sm text-muted-foreground">
-                    Cada unidad tiene su propia agenda. En desktop veras un timeline por dias y en mobile una agenda compacta.
+                    Cada unidad tiene su propia agenda para el rango seleccionado. Si hay muchos dias, puedes desplazarte en horizontal.
                 </p>
             </div>
 
@@ -123,9 +135,9 @@ const SerializedInventoryAgenda = ({
                             <div className="mt-3 overflow-x-auto">
                                 <div
                                     className="grid min-w-[340px] gap-2"
-                                    style={{ gridTemplateColumns: `repeat(${mobileDays.length}, minmax(44px, 1fr))` }}
+                                    style={{ gridTemplateColumns: `repeat(${timelineDays.length}, minmax(44px, 1fr))` }}
                                 >
-                                    {mobileDays.map((day) => {
+                                    {timelineDays.map((day) => {
                                         const allocation = getAllocationForDay(unitAllocations, day);
 
                                         return (
@@ -172,12 +184,12 @@ const SerializedInventoryAgenda = ({
                 <div className="min-w-[980px] space-y-2">
                     <div
                         className="grid gap-2"
-                        style={{ gridTemplateColumns: `220px repeat(${desktopDays.length}, minmax(50px, 1fr))` }}
+                        style={{ gridTemplateColumns: `220px repeat(${timelineDays.length}, minmax(56px, 1fr))` }}
                     >
                         <div className="px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             Unidad
                         </div>
-                        {desktopDays.map((day) => (
+                        {timelineDays.map((day) => (
                             <div
                                 key={day.toISOString()}
                                 className="rounded-lg border border-border bg-muted/20 px-2 py-2 text-center"
@@ -197,7 +209,7 @@ const SerializedInventoryAgenda = ({
                             <div
                                 key={unit.unitId}
                                 className="grid gap-2"
-                                style={{ gridTemplateColumns: `220px repeat(${desktopDays.length}, minmax(50px, 1fr))` }}
+                                style={{ gridTemplateColumns: `220px repeat(${timelineDays.length}, minmax(56px, 1fr))` }}
                             >
                                 <div className="rounded-xl border border-border bg-background p-3">
                                     <p className="font-medium">{unit.code}</p>
@@ -208,7 +220,7 @@ const SerializedInventoryAgenda = ({
                                     </p>
                                 </div>
 
-                                {desktopDays.map((day) => {
+                                {timelineDays.map((day) => {
                                     const allocation = getAllocationForDay(unitAllocations, day);
 
                                     return (

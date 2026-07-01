@@ -6,15 +6,19 @@ import {
     resolveProductRentability,
 } from "@/domain/services/ProductRentabilityService";
 
-export const useProductInventory = (productId?: string | null, enabled: boolean = true) => {
+export const useProductInventory = (
+    productId?: string | null,
+    enabled: boolean = true,
+    range?: { startDate?: string | null; endDate?: string | null },
+) => {
     return useQuery({
-        queryKey: ["productInventory", productId],
+        queryKey: ["productInventory", productId, range?.startDate ?? null, range?.endDate ?? null],
         queryFn: async () => {
             if (!productId) {
                 return null;
             }
 
-            return productInventoryService.getInventorySummary(productId);
+            return productInventoryService.getInventorySummary(productId, range);
         },
         enabled: enabled && Boolean(productId),
     });

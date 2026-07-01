@@ -168,7 +168,7 @@ const PremiumTeaser = () => (
             <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <p className="text-sm font-semibold text-[#0F172A]">Comparativa temporal</p>
                 <p className="mt-1 text-sm text-[#0F172A]/60">
-                    KPIs con delta frente al periodo anterior sin inventar datos de backend.
+                    KPIs con delta frente al periodo anterior.
                 </p>
             </div>
         </CardContent>
@@ -257,10 +257,6 @@ export const CompanyAdvancedStatsPremium = ({
         return null;
     }
 
-    if (!data.hasAnyData) {
-        return null;
-    }
-
     const funnelBase = data.funnel.steps[0]?.value ?? 0;
     const responseKpi = data.responsePerformance.averageFirstResponse;
     const visibleConversionKpis = data.conversionKpis.filter(
@@ -286,7 +282,7 @@ export const CompanyAdvancedStatsPremium = ({
                                 Rendimiento comercial
                             </CardTitle>
                             <CardDescription>
-                                Ratios, embudo y señales derivadas de los datos reales disponibles en la API.
+                                Ratios, embudo y señales derivados de los datos disponibles.
                             </CardDescription>
                         </div>
                     </div>
@@ -308,7 +304,7 @@ export const CompanyAdvancedStatsPremium = ({
                                     Embudo de conversión
                                 </CardTitle>
                                 <CardDescription>
-                                    Se adapta a las etapas reales disponibles hoy en OpenAPI.
+                                    Se adapta a las etapas disponibles en este momento.
                                 </CardDescription>
                             </div>
                             <AdvancedStatsDeltaBadge delta={data.funnel.delta} />
@@ -359,7 +355,7 @@ export const CompanyAdvancedStatsPremium = ({
                             Rendimiento de atención
                         </CardTitle>
                         <CardDescription>
-                            Métricas comerciales disponibles en la API actual.
+                            Métricas comerciales disponibles para este periodo.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -401,7 +397,7 @@ export const CompanyAdvancedStatsPremium = ({
 
                         {unavailableNotes.length > 0 && (
                             <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-sm text-[#0F172A]/60">
-                                <p className="font-medium text-[#0F172A]">Bloques en espera de backend</p>
+                                <p className="font-medium text-[#0F172A]">Próximas métricas</p>
                                 <ul className="mt-2 space-y-1">
                                     {unavailableNotes.map((section) => (
                                         <li key={section.reason}>{section.reason}</li>
@@ -461,7 +457,7 @@ export const CompanyAdvancedStatsPremium = ({
                 <CardHeader>
                     <CardTitle className="text-base">Señales automáticas</CardTitle>
                     <CardDescription>
-                        Reglas deterministas basadas sólo en métricas reales de la API actual.
+                        Reglas deterministas basadas en métricas reales del periodo.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2">

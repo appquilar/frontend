@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { companyProfileService } from "@/compositionRoot";
 import type { UpdateCompanyProfileInput } from "@/domain/models/CompanyProfile";
+import { PUBLIC_COMPANY_PROFILE_QUERY_KEY } from "@/application/hooks/usePublicCompanyProfile";
 
 const COMPANY_PROFILE_QUERY_KEY = ["companyProfile"] as const;
 
@@ -20,6 +21,9 @@ export const useUpdateCompanyProfile = () => {
         onSuccess: async (_, variables) => {
             await queryClient.invalidateQueries({
                 queryKey: [...COMPANY_PROFILE_QUERY_KEY, variables.companyId],
+            });
+            await queryClient.invalidateQueries({
+                queryKey: PUBLIC_COMPANY_PROFILE_QUERY_KEY,
             });
             await queryClient.invalidateQueries({
                 queryKey: ["currentUser"],

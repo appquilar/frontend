@@ -424,7 +424,7 @@ export class CompanyAdvancedStatsService {
             buildRateKpi(
                 "message_to_rental",
                 "Mensaje -> alquiler",
-                "Ratio real entregado por la API para conversación a alquiler.",
+                "Conversaciones que terminan en alquiler confirmado.",
                 currentStats.summary.messageToRentalRatio,
                 previousStats.summary.messageToRentalRatio,
                 "higher"
@@ -448,7 +448,7 @@ export class CompanyAdvancedStatsService {
             conversionKpis,
             responsePerformance: {
                 averageFirstResponse: averageFirstResponseKpi,
-                helperText: "La API actual sólo expone el tiempo medio de primera respuesta. La mediana y la tasa de respuesta quedarán ocultas hasta que exista soporte backend.",
+                helperText: "Tiempo medio hasta la primera respuesta enviada por tu equipo. Otras lecturas de atención se añadirán cuando haya datos suficientes.",
             },
             productConversionRows,
             insights,
@@ -458,25 +458,25 @@ export class CompanyAdvancedStatsService {
                 responsePerformance: {
                     available: true,
                     partial: true,
-                    reason: "Sólo hay tiempo medio de primera respuesta en la API actual.",
+                    reason: "Por ahora sólo hay tiempo medio de primera respuesta.",
                 },
                 trafficSources: {
                     available: false,
-                    reason: "La API actual no expone breakdown de adquisición por canal.",
+                    reason: "El desglose por canal de adquisición todavía no está disponible.",
                 },
                 lostDemand: {
                     available: false,
-                    reason: "La API actual no expone demanda perdida por disponibilidad o fechas.",
+                    reason: "La demanda perdida por disponibilidad o fechas todavía no está disponible.",
                 },
             },
             exportReadiness: {
                 csv: {
                     available: false,
-                    reason: "La exportación CSV se activará cuando exista soporte backend dedicado.",
+                    reason: "La exportación CSV se activará más adelante.",
                 },
                 pdf: {
                     available: false,
-                    reason: "La exportación PDF se activará cuando exista soporte backend dedicado.",
+                    reason: "La exportación PDF se activará más adelante.",
                 },
             },
             hasAnyData,

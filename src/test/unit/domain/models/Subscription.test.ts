@@ -165,6 +165,41 @@ describe("subscription capability helpers", () => {
     expect(isCompanyPremiumAdvancedStatsEnabled(null)).toBe(false);
   });
 
+  it("enables advanced dashboard capabilities for active early bird companies even with stale capabilities", () => {
+    const context = createCompanyContext({
+      planType: "early_bird",
+      subscriptionStatus: "active",
+      isFoundingAccount: true,
+      capabilities: {
+        advancedAnalytics: { state: "disabled", limits: null },
+        apiAccess: { state: "disabled", limits: null },
+      },
+      entitlements: {
+        planType: "early_bird",
+        subscriptionStatus: "active",
+        quotas: {
+          activeProducts: null,
+          teamMembers: null,
+        },
+        capabilities: {
+          advancedAnalytics: { state: "disabled", limits: null },
+          apiAccess: { state: "disabled", limits: null },
+        },
+        overrides: {
+          isPlatformAdmin: false,
+          isCompanyOwner: true,
+          isCompanyAdmin: true,
+          isFoundingAccount: true,
+        },
+      },
+    });
+
+    expect(hasCompanyCapabilityAccess(context, "advancedAnalytics")).toBe(true);
+    expect(isCompanyAdvancedAnalyticsEnabled(context)).toBe(true);
+    expect(isCompanyPremiumAdvancedStatsEnabled(context)).toBe(true);
+    expect(hasCompanyCapabilityAccess(context, "apiAccess", ["read_only"])).toBe(false);
+  });
+
   it("reads user capabilities from entitlements first and falls back to legacy values", () => {
     const userWithEntitlements = createUserContext({
       capabilities: {

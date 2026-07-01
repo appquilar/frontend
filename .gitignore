@@ -28,7 +28,9 @@ local-gitingest
 .env
 
 coverage/
+coverage-*/
 coverage-e2e/
 coverage-e2e-full/
 .e2e-coverage/
+tsconfig.app.tsbuildinfo
 public/landing/

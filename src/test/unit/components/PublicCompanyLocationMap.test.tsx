@@ -44,7 +44,11 @@ describe("PublicCompanyLocationMap", () => {
     );
 
     expect(container).toBeEmptyDOMElement();
-    expect(useProductLocationMapMock).not.toHaveBeenCalled();
+    expect(useProductLocationMapMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locationLabel: "",
+      })
+    );
   });
 
   it("uses exact coordinates for the maps link and renders the exact-location copy", () => {

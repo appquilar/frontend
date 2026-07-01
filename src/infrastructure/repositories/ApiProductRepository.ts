@@ -416,10 +416,21 @@ export class ApiProductRepository implements ProductRepository {
         return this.mapProductAvailability(payload);
     }
 
-    async getInventorySummary(productId: string): Promise<ProductInventorySummary | null> {
+    async getInventorySummary(
+        productId: string,
+        range?: { startDate?: string | null; endDate?: string | null }
+    ): Promise<ProductInventorySummary | null> {
         try {
+            const queryParams = new URLSearchParams();
+            if (range?.startDate) {
+                queryParams.append("start_date", range.startDate);
+            }
+            if (range?.endDate) {
+                queryParams.append("end_date", range.endDate);
+            }
+            const querySuffix = queryParams.toString();
             const response = await this.client.get<any>(
-                `/api/products/${productId}/inventory`,
+                `/api/products/${productId}/inventory${querySuffix ? `?${querySuffix}` : ""}`,
                 { headers: this.getAuthHeaders() }
             );
 

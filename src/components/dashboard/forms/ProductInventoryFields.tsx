@@ -95,6 +95,17 @@ const formatReservationLabel = (value?: { startsAt: string; endsAt: string } | n
     return `${start.toLocaleDateString("es-ES")} - ${end.toLocaleDateString("es-ES")}`;
 };
 
+const toDateInputValue = (date: Date): string => {
+    const pad = (value: number) => String(value).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const addDays = (date: Date, days: number): Date => {
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + days);
+    return nextDate;
+};
+
 const ProductInventoryFields = ({
     control,
     productId,
@@ -109,7 +120,21 @@ const ProductInventoryFields = ({
     const { capability } = useCanManageInventory(ownerType);
     const shouldLoadInventorySummary =
         ownerType === "company" && enableInventoryQuery && Boolean(productId);
-    const inventoryQuery = useProductInventory(productId ?? null, shouldLoadInventorySummary);
+    const [inventoryRange, setInventoryRange] = useState(() => {
+        const today = new Date();
+        return {
+            startDate: toDateInputValue(today),
+            endDate: toDateInputValue(addDays(today, 13)),
+        };
+    });
+    const normalizedInventoryRange = inventoryRange.endDate < inventoryRange.startDate
+        ? { startDate: inventoryRange.startDate, endDate: inventoryRange.startDate }
+        : inventoryRange;
+    const inventoryQuery = useProductInventory(
+        productId ?? null,
+        shouldLoadInventorySummary,
+        normalizedInventoryRange,
+    );
     const allocationsQuery = useProductInventoryAllocations(
         productId ?? null,
         shouldLoadInventorySummary && inventoryMode === "managed_serialized",
@@ -383,6 +408,48 @@ const ProductInventoryFields = ({
                             </div>
                         </div>
 
+                        {enableInventoryQuery && (
+                            <div className="grid gap-3 rounded-xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                                <div className="space-y-1 sm:col-span-2">
+                                    <p className="font-medium">Rango de disponibilidad</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        El resumen y el calendario se calculan para estas fechas.
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="inventory-range-start" className="text-sm font-medium">
+                                        Desde
+                                    </label>
+                                    <Input
+                                        id="inventory-range-start"
+                                        type="date"
+                                        value={inventoryRange.startDate}
+                                        onChange={(event) =>
+                                            setInventoryRange((currentRange) => ({
+                                                ...currentRange,
+                                                startDate: event.target.value,
+                                            }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="inventory-range-end" className="text-sm font-medium">
+                                        Hasta
+                                    </label>
+                                    <Input
+                                        id="inventory-range-end"
+                                        type="date"
+                                        min={inventoryRange.startDate}
+                                        value={normalizedInventoryRange.endDate}
+                                        onChange={(event) =>
+                                            setInventoryRange((currentRange) => ({
+                                                ...currentRange,
+                                                endDate: event.target.value,
+                                            }))}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-4">
                             <Badge
                                 variant="outline"
@@ -494,6 +561,8 @@ const ProductInventoryFields = ({
                             <SerializedInventoryAgenda
                                 units={visibleUnits}
                                 allocations={visibleAllocations}
+                                startDate={normalizedInventoryRange.startDate}
+                                endDate={normalizedInventoryRange.endDate}
                             />
                         )}
                     </div>

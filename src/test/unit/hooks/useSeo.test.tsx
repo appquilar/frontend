@@ -44,6 +44,7 @@ describe("useSeo", () => {
         config={{
           title: "Empresa destacada | Appquilar",
           description: "Perfil público con catálogo y ubicación.",
+          canonicalUrl: "https://appquilar.com/empresa/acme",
           ogTitle: "Empresa destacada",
           ogDescription: "Catálogo profesional para alquilar.",
           ogImage: "https://appquilar.com/company.jpg",

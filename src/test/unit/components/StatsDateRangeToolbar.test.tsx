@@ -93,7 +93,7 @@ describe("StatsDateRangeToolbar", () => {
     it("shows the fallback label, a single preset and the error message for short ranges", () => {
         renderWithProviders(
             <StatsDateRangeToolbar
-                range={{}}
+                range={{ from: undefined, to: undefined }}
                 selectedRangeDays={0}
                 isDatePopoverOpen={false}
                 onDatePopoverOpenChange={vi.fn()}

@@ -34,10 +34,6 @@ const PublicCompanyLocationMap = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapsError, setMapsError] = useState<string | null>(null);
   const normalizedLocationLabel = locationLabel.trim();
-  if (!normalizedLocationLabel) {
-    return null;
-  }
-
   const mapQuery = buildMapQuery(normalizedLocationLabel, coordinates);
   const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
   const coordinateTuple = coordinates
@@ -53,6 +49,10 @@ const PublicCompanyLocationMap = ({
     zoom: isApproximate ? 10 : 13,
     onError: setMapsError,
   });
+
+  if (!normalizedLocationLabel) {
+    return null;
+  }
 
   return (
     <section className="rounded-3xl border border-border/60 bg-card p-5 shadow-sm">

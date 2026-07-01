@@ -165,7 +165,10 @@ export interface ProductRepository {
      * Dashboard-only inventory summary loaded from the product "Inventario" tab.
      * Backend route: GET /api/products/{product_id}/inventory
      */
-    getInventorySummary(productId: string): Promise<ProductInventorySummary | null>;
+    getInventorySummary(
+        productId: string,
+        range?: { startDate?: string | null; endDate?: string | null }
+    ): Promise<ProductInventorySummary | null>;
 
     /**
      * Dashboard-only agenda feed used to explain which rents occupy serialized units.

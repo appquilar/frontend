@@ -124,16 +124,21 @@ describe("productFormSchema", () => {
   });
 
   it("maps image ids and inventory defaults from product data into the form view model", () => {
-    const product = {
+    const product: Product = {
       ...createProduct(),
       image_ids: ["img-1", "img-2"],
       imageUrl: "",
       inventorySummary: {
+        productId: "product-1",
         totalQuantity: 9,
         reservedQuantity: 1,
         availableQuantity: 8,
+        isRentalEnabled: true,
         isInventoryEnabled: true,
+        capabilityState: "enabled",
         inventoryMode: "managed_serialized",
+        isRentableNow: true,
+        unavailabilityReason: null,
         productInternalId: "SKU-1",
       },
     };

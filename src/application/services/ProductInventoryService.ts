@@ -22,8 +22,11 @@ export class ProductInventoryService {
     ) {
     }
 
-    getInventorySummary(productId: string): Promise<ProductInventorySummary | null> {
-        return this.productRepository.getInventorySummary(productId);
+    getInventorySummary(
+        productId: string,
+        range?: { startDate?: string | null; endDate?: string | null }
+    ): Promise<ProductInventorySummary | null> {
+        return this.productRepository.getInventorySummary(productId, range);
     }
 
     getInventoryAllocations(productId: string): Promise<InventoryAllocation[]> {

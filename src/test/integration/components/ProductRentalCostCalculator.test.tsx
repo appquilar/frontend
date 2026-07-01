@@ -171,7 +171,7 @@ describe("ProductRentalCostCalculator", () => {
         availability={{
           canRequest: false,
           managedByPlatform: false,
-          status: "manual_check",
+          status: "owner_confirmation",
           message: "Consulta con el proveedor antes de enviar la solicitud.",
         }}
       />
@@ -199,7 +199,7 @@ describe("ProductRentalCostCalculator", () => {
         availability={{
           canRequest: false,
           managedByPlatform: true,
-          status: "manual_review",
+          status: "owner_confirmation",
           message: "Revisaremos manualmente la disponibilidad antes de confirmar.",
         }}
       />

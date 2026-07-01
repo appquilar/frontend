@@ -217,6 +217,10 @@ export const hasCompanyCapabilityAccess = (
     capabilityKey: CapabilityKey,
     allowedStates: CapabilityState[] = ["enabled", "read_only"]
 ): boolean => {
+    if (isActiveEarlyBirdCompany(context) && isEarlyBirdAdvancedCapability(capabilityKey)) {
+        return allowedStates.includes("enabled");
+    }
+
     return resolveCapabilityAccess(
         getCompanyCapability(context, capabilityKey) as ResolvedCapability,
         allowedStates
@@ -237,3 +241,18 @@ export const hasUserCapabilityAccess = (
 export const isUserBasicAnalyticsEnabled = (
     user: UserSubscriptionContext | null | undefined
 ): boolean => hasUserCapabilityAccess(user, "basicAnalytics");
+
+const isActiveEarlyBirdCompany = (context: CompanyContext | null | undefined): boolean => {
+    if (!context || !isSubscriptionActive(context.subscriptionStatus)) {
+        return false;
+    }
+
+    return context.planType === "early_bird"
+        || context.isFoundingAccount
+        || context.entitlements?.planType === "early_bird"
+        || context.entitlements?.overrides.isFoundingAccount === true;
+};
+
+const isEarlyBirdAdvancedCapability = (capabilityKey: CapabilityKey): boolean => {
+    return capabilityKey === "advancedAnalytics" || capabilityKey === "apiAccess";
+};

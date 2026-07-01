@@ -213,17 +213,46 @@ describe("CompanyAdvancedStatsPremium", () => {
         expect(screen.getByText("Taladro Pro")).toBeInTheDocument();
     }, 15000);
 
-    it("does not render anything when premium stats have no data", () => {
+    it("renders commercial performance and funnel placeholders when premium stats have no data", () => {
         useCompanyAdvancedStatsMock.mockReturnValue({
             isLoading: false,
             error: null,
             data: {
                 ...advancedStatsFixture,
+                funnel: {
+                    ...advancedStatsFixture.funnel,
+                    steps: advancedStatsFixture.funnel.steps.map((step) => ({
+                        ...step,
+                        value: 0,
+                        shareOfFirstStep: 0,
+                        conversionFromPrevious: step.conversionFromPrevious == null ? null : 0,
+                    })),
+                    overallConversionRate: 0,
+                    previousOverallConversionRate: 0,
+                    delta: { kind: "neutral", absoluteChange: 0, percentageChange: 0 },
+                },
+                conversionKpis: advancedStatsFixture.conversionKpis.map((kpi) => ({
+                    ...kpi,
+                    currentValue: kpi.key === "average_first_response_minutes" ? null : 0,
+                    previousValue: kpi.key === "average_first_response_minutes" ? null : 0,
+                    delta: { kind: "neutral", absoluteChange: 0, percentageChange: 0 },
+                })),
+                responsePerformance: {
+                    ...advancedStatsFixture.responsePerformance,
+                    averageFirstResponse: {
+                        ...advancedStatsFixture.responsePerformance.averageFirstResponse,
+                        currentValue: null,
+                        previousValue: null,
+                        delta: { kind: "neutral", absoluteChange: 0, percentageChange: 0 },
+                    },
+                },
+                productConversionRows: [],
+                insights: [],
                 hasAnyData: false,
             },
         });
 
-        const { container } = render(
+        render(
             <CompanyAdvancedStatsPremium
                 companyId="company-1"
                 period={{ from: "2026-04-01", to: "2026-04-07" }}
@@ -231,6 +260,9 @@ describe("CompanyAdvancedStatsPremium", () => {
             />
         );
 
-        expect(container).toBeEmptyDOMElement();
+        expect(screen.getByText("Rendimiento comercial")).toBeInTheDocument();
+        expect(screen.getByText("Embudo de conversión")).toBeInTheDocument();
+        expect(screen.getByText("Sin lecturas destacadas por producto para este rango todavía.")).toBeInTheDocument();
+        expect(screen.getByText("No hay señales relevantes para este rango todavía.")).toBeInTheDocument();
     });
 });

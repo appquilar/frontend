@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { selectAvailableRentalDates } from "../dateRangePicker";
 
@@ -89,7 +90,7 @@ const breakdownPayload = {
   },
 };
 
-const authenticatePublicUser = async (page: Parameters<typeof test>[0]["page"]) => {
+const authenticatePublicUser = async (page: Page) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
       "auth_token",

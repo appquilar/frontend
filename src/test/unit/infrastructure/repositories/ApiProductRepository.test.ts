@@ -232,7 +232,9 @@ describe("ApiProductRepository", () => {
     });
 
     it("creates products with a generated id and inventory-aware dto fields", async () => {
-        const randomUuidSpy = vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue("generated-product-id");
+        const randomUuidSpy = vi
+            .spyOn(globalThis.crypto, "randomUUID")
+            .mockReturnValue("00000000-0000-4000-8000-000000000123");
         apiClient.post.mockResolvedValue(undefined);
 
         const repository = new ApiProductRepository(
@@ -275,7 +277,7 @@ describe("ApiProductRepository", () => {
         expect(apiClient.post).toHaveBeenCalledWith(
             "/api/products",
             {
-                product_id: "generated-product-id",
+                product_id: "00000000-0000-4000-8000-000000000123",
                 name: "Taladro",
                 slug: "taladro",
                 internal_id: "taladro",

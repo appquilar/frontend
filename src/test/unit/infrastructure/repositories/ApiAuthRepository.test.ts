@@ -28,6 +28,13 @@ const createSessionStorageMock = (): SessionStorageMock => ({
   clear: vi.fn(),
 });
 
+const createSession = (): AuthSession => ({
+  token: "jwt-token",
+  userId: null,
+  expiresAt: null,
+  roles: [],
+});
+
 describe("ApiAuthRepository", () => {
   let apiClient: ApiClientMock;
   let sessionStorage: SessionStorageMock;
@@ -60,11 +67,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("persists the returned token on successful login", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     apiClient.post.mockResolvedValueOnce({
       success: true,
@@ -148,11 +151,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("logs out with Authorization header when a session exists and then clears it", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValue(session);
     apiClient.post.mockResolvedValueOnce(undefined);
@@ -179,11 +178,7 @@ describe("ApiAuthRepository", () => {
       skipParseJson: true,
     });
 
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValueOnce(session);
     apiClient.post.mockRejectedValueOnce(new Error("network down"));
@@ -193,11 +188,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("changes password using the legacy user_id field from /api/me when needed", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValue(session);
     apiClient.get.mockResolvedValueOnce({
@@ -235,11 +226,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("changes password using the canonical id field from /api/me when available", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValue(session);
     apiClient.get.mockResolvedValueOnce({
@@ -287,11 +274,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("rejects authenticated password change when /api/me does not include a user id", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValue(session);
     apiClient.get.mockResolvedValueOnce({
@@ -311,11 +294,7 @@ describe("ApiAuthRepository", () => {
   });
 
   it("delegates current session lookups to the session storage", async () => {
-    const session: AuthSession = {
-      token: "jwt-token",
-      expiresAt: null,
-      roles: [],
-    };
+    const session = createSession();
 
     sessionStorage.getCurrentSession.mockReturnValue(session);
     sessionStorage.getCurrentSessionSync.mockReturnValue(session);

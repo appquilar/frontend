@@ -13,9 +13,10 @@ NC = \033[0m # No color
 
 NETWORK_NAME = appquilar
 
-.PHONY: help install dev dev-landing dev-domains-setup dev-domains-up dev-domains-down stripe-listen dev-e2e-seed e2e-seed-server landing-sync landing-build-sync build build-landing up up-prod down down-prod restart logs clean test test-unit test-integration test-e2e test-e2e-dashboard test-e2e-dashboard-shard test-e2e-dashboard-ui test-e2e-dashboard-ui-shard e2e-dashboard-generate test-ci coverage coverage-e2e coverage-top coverage-all ensure-playwright start start-prod exec destroy rebuild network check-be shell
+.PHONY: help install dev dev-landing dev-domains-setup dev-domains-up dev-domains-down stripe-check-account stripe-listen dev-e2e-seed e2e-seed-server landing-sync landing-build-sync build build-landing up up-prod down down-prod restart logs clean test test-unit test-integration test-e2e test-e2e-dashboard test-e2e-dashboard-shard test-e2e-dashboard-ui test-e2e-dashboard-ui-shard e2e-dashboard-generate test-ci coverage coverage-e2e coverage-top coverage-all ensure-playwright start start-prod exec destroy rebuild network check-be shell
 
 STRIPE = stripe
+STRIPE_EXPECTED_ACCOUNT_ID ?= acct_1T1MQ2COjGpVsE06
 STRIPE_FORWARD_TO ?= https://dev.api.appquilar.com/api/billing/webhook/stripe
 STRIPE_EVENTS ?= checkout.session.completed,checkout.session.async_payment_succeeded,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
 
@@ -28,6 +29,7 @@ help:
 	@echo "  make dev-domains-setup - Generate local HTTPS certs + show hosts setup for dev.* domains"
 	@echo "  make dev-domains-up - Start API + FE + HTTPS proxy for dev.appquilar.com / dev.api.appquilar.com"
 	@echo "  make dev-domains-down - Stop API + FE + HTTPS proxy local domains stack"
+	@echo "  make stripe-check-account - Verify Stripe CLI is authenticated to the expected Appquilar account"
 	@echo "  make stripe-listen - Forward Stripe webhooks to the local dev API"
 	@echo "  make dev-e2e-seed - Start FE locally using deterministic E2E seed API"
 	@echo "  make landing-sync - Sync appquilar-landing dist into public/landing"
@@ -114,11 +116,24 @@ dev-domains-down:
 	-$(DOCKER_COMPOSE) -f docker-compose.dev.yml down
 	-$(DOCKER_COMPOSE) -f ../api/docker-compose.yml down
 
-stripe-listen:
+stripe-check-account:
 	@if ! command -v $(STRIPE) >/dev/null 2>&1; then \
 		echo "${RED}❌ Stripe CLI is not installed. Install it first and run 'stripe login'.${NC}"; \
 		exit 1; \
 	fi
+	@CURRENT_ACCOUNT_ID="$$( $(STRIPE) config --list 2>/dev/null | awk -F"'" '/account_id/{print $$2; exit}' )"; \
+	if [ -z "$$CURRENT_ACCOUNT_ID" ]; then \
+		echo "${RED}❌ Stripe CLI account could not be detected. Run 'stripe login' and retry.${NC}"; \
+		exit 1; \
+	fi; \
+	if [ "$$CURRENT_ACCOUNT_ID" != "$(STRIPE_EXPECTED_ACCOUNT_ID)" ]; then \
+		echo "${RED}❌ Stripe CLI is authenticated to $$CURRENT_ACCOUNT_ID, expected $(STRIPE_EXPECTED_ACCOUNT_ID).${NC}"; \
+		echo "Run 'stripe login' with the Appquilar Stripe account before using local billing commands."; \
+		exit 1; \
+	fi; \
+	echo "${GREEN}Stripe CLI account verified: $(STRIPE_EXPECTED_ACCOUNT_ID)${NC}"
+
+stripe-listen: stripe-check-account
 	@echo "${GREEN}Forwarding Stripe webhooks to $(STRIPE_FORWARD_TO)...${NC}"
 	@echo "Copy the webhook signing secret shown by Stripe CLI into ../api/.env.local as STRIPE_WEBHOOK_SECRET=..."
 	@echo "Then keep this command running while testing checkout or portal flows."

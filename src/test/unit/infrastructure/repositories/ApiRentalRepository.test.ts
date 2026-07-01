@@ -70,12 +70,12 @@ describe("ApiRentalRepository", () => {
     const result = await repository.listRents({
       productId: "product-1",
       search: "Taladro",
-      statusGroup: "active",
+      statusGroup: "pending",
       startDate: new Date(2026, 0, 10),
       endDate: new Date(2026, 0, 12),
-      status: "confirmed",
+      status: "rental_confirmed",
       isLead: true,
-      timeline: "future",
+      timeline: "upcoming",
       role: "owner",
       ownerId: "owner-1",
       page: 3,
@@ -83,7 +83,7 @@ describe("ApiRentalRepository", () => {
     });
 
     expect(apiClient.get).toHaveBeenCalledWith(
-      "/api/rents?product_id=product-1&search=Taladro&status_group=active&start_date=2026-01-10&end_date=2026-01-12&status=confirmed&is_lead=true&timeline=future&role=owner&owner_id=owner-1&page=3&per_page=25",
+      "/api/rents?product_id=product-1&search=Taladro&status_group=pending&start_date=2026-01-10&end_date=2026-01-12&status=rental_confirmed&is_lead=true&timeline=upcoming&role=owner&owner_id=owner-1&page=3&per_page=25",
       {
         headers: {
           Authorization: "Bearer jwt-token",
@@ -265,7 +265,7 @@ describe("ApiRentalRepository", () => {
       deposit: { amount: 3000, currency: "EUR" },
       price: { amount: 4000, currency: "EUR" },
       depositReturned: { amount: 1000, currency: "EUR" },
-      status: "confirmed",
+      status: "rental_confirmed",
       proposalValidUntil: null,
     });
     await repository.updateRentStatus("rent-1", {
@@ -309,7 +309,7 @@ describe("ApiRentalRepository", () => {
         deposit: { amount: 3000, currency: "EUR" },
         price: { amount: 4000, currency: "EUR" },
         deposit_returned: { amount: 1000, currency: "EUR" },
-        status: "confirmed",
+        status: "rental_confirmed",
         proposal_valid_until: null,
       },
       {

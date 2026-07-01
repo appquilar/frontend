@@ -5,6 +5,7 @@ import RentalDetailsCard from '@/components/dashboard/rentals/details/RentalDeta
 import CustomerInfoCard from '@/components/dashboard/rentals/details/CustomerInfoCard';
 import RentalEditableCard from '@/components/dashboard/rentals/details/RentalEditableCard';
 import RentalStateWizard from '@/components/dashboard/rentals/details/RentalStateWizard';
+import RentalInventoryStatusCard from '@/components/dashboard/rentals/details/RentalInventoryStatusCard';
 import RentalMessagesCard from '@/components/dashboard/rentals/details/RentalMessagesCard';
 import LoadingSpinner from '@/components/dashboard/rentals/details/LoadingSpinner';
 import ErrorDisplay from '@/components/dashboard/rentals/details/ErrorDisplay';
@@ -79,8 +80,12 @@ const RentalDetails = () => {
             />
           </div>
 
+          <div className="order-3">
+            <RentalInventoryStatusCard rental={rental} viewerRole={viewerRole} />
+          </div>
+
           {canEditRental && (
-            <div className="order-3">
+            <div className="order-4">
               <RentalEditableCard
                 rental={rental}
                 viewerRole={viewerRole}

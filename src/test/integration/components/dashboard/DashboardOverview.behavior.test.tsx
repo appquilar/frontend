@@ -138,6 +138,32 @@ const createCompanyAdminUser = (advancedAnalytics = true) => ({
   },
 });
 
+const createEarlyBirdCompanyAdminUserWithStaleCapabilities = () => ({
+  ...createCompanyAdminUser(false),
+  companyContext: {
+    ...createCompanyAdminUser(false).companyContext,
+    planType: "early_bird" as const,
+    subscriptionStatus: "active" as const,
+    isFoundingAccount: true,
+    productSlotLimit: null,
+    entitlements: {
+      ...createCompanyAdminUser(false).companyContext.entitlements,
+      planType: "early_bird" as const,
+      subscriptionStatus: "active" as const,
+      quotas: {
+        activeProducts: null,
+        teamMembers: null,
+      },
+      overrides: {
+        isPlatformAdmin: false,
+        isCompanyOwner: true,
+        isCompanyAdmin: true,
+        isFoundingAccount: true,
+      },
+    },
+  },
+});
+
 const createCompanyStats = () => ({
   summary: {
     totalViews: 140,
@@ -532,6 +558,33 @@ describe("DashboardOverview behavior", () => {
     expect(
       screen.getAllByText("Disponible cuando tu plan tenga analítica avanzada habilitada.")
     ).toHaveLength(2);
+  });
+
+  it("shows advanced dashboard metrics for active early bird companies with stale capabilities", () => {
+    useAuthMock.mockReturnValue({
+      currentUser: createEarlyBirdCompanyAdminUserWithStaleCapabilities(),
+      isLoading: false,
+      hasRole: vi.fn().mockReturnValue(false),
+    });
+    useCompanyEngagementStatsMock.mockReturnValue({
+      data: createCompanyStats(),
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    useActiveProductsCountMock.mockReturnValue({ data: 5, refetch: vi.fn() });
+
+    renderWithProviders(<DashboardOverview />, { route: "/dashboard" });
+
+    expect(screen.getByText("Repetición de visitantes")).toBeInTheDocument();
+    expect(screen.getByText("1ª respuesta media")).toBeInTheDocument();
+    expect(screen.getByText("Top ubicaciones")).toBeInTheDocument();
+    expect(screen.getByText("Madrid, Madrid, España")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Visita a mensaje" })).toBeInTheDocument();
+    expect(screen.getByTestId("premium-advanced-stats")).toHaveTextContent("company-1:true");
+    expect(
+      screen.queryByText("Disponible cuando tu plan tenga analítica avanzada habilitada.")
+    ).not.toBeInTheDocument();
   });
 
   it("shows a dashboard error card when the company metrics request fails", () => {

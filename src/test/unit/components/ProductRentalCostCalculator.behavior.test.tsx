@@ -95,7 +95,7 @@ describe("ProductRentalCostCalculator behavior", () => {
                 availability={{
                     canRequest: false,
                     managedByPlatform: true,
-                    status: "limited",
+                    status: "unavailable",
                     message: "Solo quedan pocas unidades para esas fechas.",
                 }}
                 onCalculationChange={onCalculationChange}

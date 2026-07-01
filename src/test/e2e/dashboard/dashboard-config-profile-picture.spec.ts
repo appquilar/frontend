@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 
 const jsonHeaders = { "content-type": "application/json" };
@@ -12,7 +13,7 @@ test.describe("Dashboard Config Profile Picture", () => {
     await seed.clearToken(page);
   });
 
-  const registerProfileRoutes = async (page: Parameters<typeof test>[0]["page"], initialId: string | null) => {
+  const registerProfileRoutes = async (page: Page, initialId: string | null) => {
     let currentProfilePictureId: string | null = initialId;
     const uploadedImageId = "00000000-0000-4000-8000-000000000123";
     const currentUserPayload = () => ({
@@ -77,8 +78,7 @@ test.describe("Dashboard Config Profile Picture", () => {
       await route.fulfill({
         status: 200,
         contentType: "image/png",
-        body: tinyPng.toString("base64"),
-        isBase64: true,
+        body: tinyPng,
       });
     });
 
@@ -100,7 +100,7 @@ test.describe("Dashboard Config Profile Picture", () => {
     };
   };
 
-  const openConfigPage = async (page: Parameters<typeof test>[0]["page"]) => {
+  const openConfigPage = async (page: Page) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/dashboard(?:\?.*)?$/);
     await expect(page.getByText("Restaurando tu sesion...")).toHaveCount(0, { timeout: 15000 });

@@ -124,7 +124,11 @@ const AuthBehaviorProbe = () => {
               description: "  Alquiler profesional  ",
               fiscalIdentifier: "  B12345678  ",
               contactEmail: "  team@appquilar.com  ",
-              phoneNumber: "+34911222333",
+              phoneNumber: {
+                countryCode: "ES",
+                prefix: "+34",
+                number: "911222333",
+              },
               address: {
                 street: "Calle Mayor 1",
                 street2: null,
@@ -365,7 +369,11 @@ describe("AuthContext behavior", () => {
           description: "Alquiler profesional",
           fiscalIdentifier: "B12345678",
           contactEmail: "team@appquilar.com",
-          phoneNumber: "+34911222333",
+          phoneNumber: {
+            countryCode: "ES",
+            prefix: "+34",
+            number: "911222333",
+          },
           companyId: expect.any(String),
         })
       );

@@ -64,7 +64,7 @@ const routes: CoverageRoute[] = [
 test.describe("Dashboard Coverage Routes", () => {
   test.describe.configure({ mode: "serial" });
 
-  test.beforeEach(async ({}, testInfo) => {
+  test.beforeEach(async ({ page: _page }, testInfo) => {
     testInfo.annotations.push({
       type: "skipCoverageExploration",
       description: "Route sweep tests already validate route reachability without extra exploration.",

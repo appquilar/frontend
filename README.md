@@ -123,14 +123,16 @@ make up
 In another terminal, forward Stripe webhooks locally:
 
 ```bash
+make stripe-check-account
 make stripe-listen
 ```
 
 After `stripe login` is already done, the local Stripe flow is:
 
 1. Run `make up`.
-2. Run `make stripe-listen` in another terminal.
-3. If the `whsec_...` shown by Stripe CLI is different from the one in the backend env, copy `/Users/victor/development/appquilar/api/.env.local.example` to `/Users/victor/development/appquilar/api/.env.local`, set `STRIPE_WEBHOOK_SECRET=whsec_...`, and restart the API container.
+2. Run `make stripe-check-account` and confirm it reports `acct_1T1MQ2COjGpVsE06`.
+3. Run `make stripe-listen` in another terminal.
+4. If the `whsec_...` shown by Stripe CLI is different from the one in the backend env, copy `/Users/victor/development/appquilar/api/.env.local.example` to `/Users/victor/development/appquilar/api/.env.local`, set `STRIPE_WEBHOOK_SECRET=whsec_...`, and restart the API container.
 
 Example:
 

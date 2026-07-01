@@ -244,7 +244,7 @@ describe("application hook coverage", () => {
                 unitId: "unit-1",
                 data: {
                     code: "B-02",
-                    status: "reserved",
+                    status: "maintenance",
                 },
             });
         });
@@ -254,7 +254,7 @@ describe("application hook coverage", () => {
             "unit-1",
             {
                 code: "B-02",
-                status: "reserved",
+                status: "maintenance",
             }
         );
         expect(updateWrapper.invalidateQueriesSpy).toHaveBeenCalledWith({

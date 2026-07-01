@@ -60,6 +60,9 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
       await queryClient.invalidateQueries({ queryKey: ['rents'] });
       await queryClient.invalidateQueries({ queryKey: ['rentUnreadMessages'] });
       await queryClient.invalidateQueries({ queryKey: ['rentConversations'] });
+      if (rentalQuery.data?.productId) {
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId] });
+      }
 
       toast({
         title: 'Accion aplicada',

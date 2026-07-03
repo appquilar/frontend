@@ -316,6 +316,7 @@ test.describe("Dashboard public product edge coverage", () => {
 
     await expect.poll(() => leadAttempts).toBe(2);
     await expect.poll(() => messageAttempts).toBe(1);
-    await expect(page.getByText("Propuesta de alquiler enviada correctamente")).toBeVisible();
+    await expect(page.getByText("Solicitud enviada")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Ver alquiler" })).toBeVisible();
   });
 });

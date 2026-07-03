@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "@/components/routing/ProtectedRoute";
 import { queryClient } from "@/composition/queryClient";
 import { useRouteCurrentUserRefresh } from "@/hooks/useRouteCurrentUserRefresh";
+import { MailpitFloatingButton } from "@/components/dev/MailpitFloatingButton";
 import {
     LEGACY_PUBLIC_PATHS,
     PUBLIC_PATHS,
@@ -62,6 +63,7 @@ const App = () => (
         <TooltipProvider>
             <Toaster />
             <Sonner />
+            <MailpitFloatingButton />
 
             {/* 🔒 ÚNICO AuthProvider global */}
             <AuthProvider>

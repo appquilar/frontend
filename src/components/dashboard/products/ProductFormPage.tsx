@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useCreateProduct, useProduct, useUpdateProduct } from '@/application/ho
 import FormHeader from '@/components/dashboard/common/FormHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProductOwnerAddress } from '@/application/hooks/useProductOwnerAddress';
+import { buildProductPath } from '@/domain/config/publicRoutes';
 
 const createDraftProduct = (): Product => ({
     id: Uuid.generate().toString(),
@@ -40,6 +41,7 @@ const createDraftProduct = (): Product => ({
 const ProductFormPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
+    const [lastSavedProduct, setLastSavedProduct] = useState<{ id: string; slug: string | null } | null>(null);
     const isAddMode = !productId || productId === 'new';
     const {
         hasRequiredAddress,
@@ -99,12 +101,24 @@ const ProductFormPage = () => {
                 // Al usar mutateAsync, se ejecutará el onSuccess del hook que hace invalidateQueries(['products'])
                 await createProduct(createPayload as ProductFormData);
                 if (savedProductId) {
+                    setLastSavedProduct({
+                        id: savedProductId,
+                        slug: typeof updatedProduct.slug === 'string' && updatedProduct.slug.length > 0
+                            ? updatedProduct.slug
+                            : savedProductId,
+                    });
                     navigate(`/dashboard/products/${encodeURIComponent(savedProductId)}`, { replace: true });
                 }
             } else {
                 await updateProduct({
                     id: productId as string,
                     data: updatedProduct as ProductFormData
+                });
+                setLastSavedProduct({
+                    id: productId as string,
+                    slug: typeof updatedProduct.slug === 'string' && updatedProduct.slug.length > 0
+                        ? updatedProduct.slug
+                        : product?.slug || productId as string,
                 });
             }
         } catch (error) {
@@ -171,6 +185,27 @@ const ProductFormPage = () => {
                                 : "Ir a Configuración de dirección"}
                         </Link>
                         .
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            {lastSavedProduct && (
+                <Alert className="border-emerald-200 bg-emerald-50">
+                    <AlertTitle>Producto guardado</AlertTitle>
+                    <AlertDescription>
+                        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                            <Button asChild size="sm" variant="outline">
+                                <a href={buildProductPath(lastSavedProduct.slug ?? lastSavedProduct.id)} target="_blank" rel="noreferrer">
+                                    Ver publicación
+                                </a>
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/products/new')}>
+                                Crear otro producto
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/products')}>
+                                Volver a productos
+                            </Button>
+                        </div>
                     </AlertDescription>
                 </Alert>
             )}

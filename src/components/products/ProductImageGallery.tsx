@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ProductImageGalleryProps {
@@ -25,8 +25,10 @@ const ProductImageGallery = ({ images, productName }: ProductImageGalleryProps) 
 
     if (!images || images.length === 0) {
         return (
-            <div className="aspect-[16/10] bg-muted rounded-xl flex items-center justify-center text-sm text-muted-foreground">
-                Sin imágenes
+            <div className="flex aspect-[16/10] flex-col items-center justify-center rounded-xl border border-dashed bg-muted/60 text-center text-sm text-muted-foreground">
+                <ImageIcon className="mb-3 h-10 w-10 opacity-60" />
+                <p className="font-medium text-foreground">{productName}</p>
+                <p className="mt-1 max-w-xs">Imagen pendiente de publicar por el proveedor.</p>
             </div>
         );
     }

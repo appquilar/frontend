@@ -121,6 +121,8 @@ export const useCreateLead = () => {
       if (firstMessage) {
         await rentalService.createRentMessage(rentId, { content: firstMessage });
       }
+
+      return rentId;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['rents'] });

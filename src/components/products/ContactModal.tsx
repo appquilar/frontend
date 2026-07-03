@@ -145,7 +145,7 @@ const ContactModal = ({
 
       const computed = await ensureCalculation(data.startDate, data.endDate, data.requestedQuantity);
 
-      await createLeadMutation.mutateAsync({
+      const rentId = await createLeadMutation.mutateAsync({
         productId,
         startDate: data.startDate,
         endDate: data.endDate,
@@ -155,8 +155,14 @@ const ContactModal = ({
         message: data.message,
       });
 
-      toast.success('Propuesta de alquiler enviada correctamente', {
-        description: `${ownerName} recibirá tu solicitud pronto`
+      toast.success('Solicitud enviada', {
+        description: `${ownerName} recibirá tu solicitud pronto`,
+        action: {
+          label: 'Ver alquiler',
+          onClick: () => {
+            window.location.assign(`/dashboard/rentals/${rentId}`);
+          },
+        },
       });
 
       form.reset({

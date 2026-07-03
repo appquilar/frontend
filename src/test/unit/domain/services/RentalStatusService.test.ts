@@ -36,7 +36,7 @@ describe("RentalStatusService", () => {
 
   it("maps human-readable labels for known and unknown statuses", () => {
     expect(RentalStatusService.getStatusLabel("lead_pending")).toBe(
-      "Consulta pendiente"
+      "Solicitud recibida"
     );
     expect(RentalStatusService.getStatusLabel("proposal_pending_renter")).toBe(
       "Propuesta enviada"
@@ -45,14 +45,14 @@ describe("RentalStatusService", () => {
       "Reserva confirmada"
     );
     expect(RentalStatusService.getStatusLabel("rental_active")).toBe(
-      "En alquiler"
+      "Producto recogido"
     );
     expect(RentalStatusService.getStatusLabel("rental_completed")).toBe(
-      "Cerrado"
+      "Producto devuelto"
     );
     expect(RentalStatusService.getStatusLabel("cancelled")).toBe("Cancelado");
     expect(RentalStatusService.getStatusLabel("rejected")).toBe(
-      "Consulta rechazada"
+      "Rechazado"
     );
     expect(RentalStatusService.getStatusLabel("expired")).toBe(
       "Propuesta expirada"

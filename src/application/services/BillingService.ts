@@ -2,6 +2,7 @@ import type {
     BillingSessionResult,
     CheckoutSessionSynchronizationResult,
     CompanyMigrationResult,
+    CreateCompanyUpgradeCheckoutSessionInput,
     CreateCheckoutSessionInput,
     CreateCustomerPortalSessionInput,
     MigrateCompanyToExplorerInput,
@@ -18,6 +19,12 @@ export class BillingService {
         input: CreateCheckoutSessionInput
     ): Promise<BillingSessionResult> {
         return this.billingRepository.createCheckoutSession(input);
+    }
+
+    async createCompanyUpgradeCheckoutSession(
+        input: CreateCompanyUpgradeCheckoutSessionInput
+    ): Promise<BillingSessionResult> {
+        return this.billingRepository.createCompanyUpgradeCheckoutSession(input);
     }
 
     async createCustomerPortalSession(

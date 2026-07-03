@@ -2,6 +2,7 @@ import type {
     BillingSessionResult,
     CheckoutSessionSynchronizationResult,
     CompanyMigrationResult,
+    CreateCompanyUpgradeCheckoutSessionInput,
     CreateCheckoutSessionInput,
     CreateCustomerPortalSessionInput,
     MigrateCompanyToExplorerInput,
@@ -25,6 +26,31 @@ interface BillingSessionDto {
 
 interface CheckoutSessionRequestDto {
     scope: "user" | "company";
+    plan_type: string;
+    success_url: string;
+    cancel_url: string;
+}
+
+interface CompanyUpgradeCheckoutSessionRequestDto {
+    name: string;
+    description?: string | null;
+    fiscal_identifier?: string | null;
+    contact_email?: string | null;
+    phone_number_country_code?: string;
+    phone_number_prefix?: string;
+    phone_number_number?: string;
+    address?: {
+        street: string;
+        street2?: string | null;
+        city: string;
+        postal_code: string;
+        state: string;
+        country: string;
+    } | null;
+    location?: {
+        latitude: number;
+        longitude: number;
+    } | null;
     plan_type: string;
     success_url: string;
     cancel_url: string;
@@ -91,6 +117,53 @@ export class ApiBillingRepository implements BillingRepository {
 
         const response = await this.apiClient.post<ApiResponse<BillingSessionDto>>(
             "/api/billing/checkout-session",
+            payload,
+            { headers }
+        );
+
+        return {
+            url: response.data.url,
+        };
+    }
+
+    async createCompanyUpgradeCheckoutSession(
+        input: CreateCompanyUpgradeCheckoutSessionInput
+    ): Promise<BillingSessionResult> {
+        const headers = await this.authHeaders();
+
+        const payload: CompanyUpgradeCheckoutSessionRequestDto = {
+            name: input.name,
+            description: input.description ?? null,
+            fiscal_identifier: input.fiscalIdentifier ?? null,
+            contact_email: input.contactEmail ?? null,
+            plan_type: input.planType,
+            success_url: input.successUrl,
+            cancel_url: input.cancelUrl,
+        };
+
+        if (input.phoneNumber) {
+            payload.phone_number_country_code = input.phoneNumber.countryCode;
+            payload.phone_number_prefix = input.phoneNumber.prefix;
+            payload.phone_number_number = input.phoneNumber.number;
+        }
+
+        if (input.address) {
+            payload.address = {
+                street: input.address.street,
+                street2: input.address.street2 ?? null,
+                city: input.address.city,
+                postal_code: input.address.postalCode,
+                state: input.address.state,
+                country: input.address.country,
+            };
+        }
+
+        if (input.location) {
+            payload.location = input.location;
+        }
+
+        const response = await this.apiClient.post<ApiResponse<BillingSessionDto>>(
+            "/api/billing/company-upgrade-checkout-session",
             payload,
             { headers }
         );

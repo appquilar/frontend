@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
 import { z } from 'zod';
 import { toast } from "sonner";
 
@@ -9,7 +8,7 @@ import { toast } from "sonner";
 import CompanyInfoStep from './steps/CompanyInfoStep';
 import ContactInfoStep from './steps/ContactInfoStep';
 import SelectPlanStep from './steps/SelectPlanStep';
-import { useCreateCheckoutSession } from "@/application/hooks/useBilling";
+import { useCreateCompanyUpgradeCheckoutSession } from "@/application/hooks/useBilling";
 import type { CompanyBillingPlanType } from "@/domain/models/Billing";
 import {
   buildBillingBaseUrl,
@@ -44,8 +43,7 @@ type Step = 'info' | 'contact' | 'plan';
 
 const UpgradePage = () => {
   const navigate = useNavigate();
-  const { upgradeToCompany, refreshCurrentUser } = useAuth();
-  const createCheckoutMutation = useCreateCheckoutSession();
+  const createCheckoutMutation = useCreateCompanyUpgradeCheckoutSession();
   const [currentStep, setCurrentStep] = useState<Step>('info');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({
@@ -79,7 +77,11 @@ const UpgradePage = () => {
   const handleComplete = async () => {
     setIsSubmitting(true);
     try {
-      await upgradeToCompany({
+      const companySettingsUrl = buildBillingBaseUrl(
+        `${window.location.origin}/dashboard/config`
+      );
+      const selectedPlan = formData.selectedPlan as CompanyBillingPlanType;
+      const checkoutSession = await createCheckoutMutation.mutateAsync({
         name: formData.name,
         description: formData.description,
         fiscalIdentifier: formData.fiscalId,
@@ -104,26 +106,13 @@ const UpgradePage = () => {
                 longitude: formData.longitude,
               }
             : null,
-      });
-
-      const refreshedUser = await refreshCurrentUser();
-      const companyId = refreshedUser?.companyContext?.companyId ?? refreshedUser?.companyId ?? null;
-      if (!companyId) {
-        throw new Error("No se pudo recuperar la empresa para iniciar el checkout.");
-      }
-
-      const companySettingsUrl = buildBillingBaseUrl(
-        `${window.location.origin}/dashboard/companies/${companyId}`
-      );
-      const checkoutSession = await createCheckoutMutation.mutateAsync({
-        scope: "company",
-        planType: formData.selectedPlan as CompanyBillingPlanType,
+        planType: selectedPlan,
         successUrl: buildBillingCheckoutSuccessUrl(
           companySettingsUrl,
           "company",
-          formData.selectedPlan as CompanyBillingPlanType
+          selectedPlan
         ),
-        cancelUrl: companySettingsUrl,
+        cancelUrl: `${window.location.origin}/dashboard/upgrade`,
       });
 
       window.location.assign(checkoutSession.url);

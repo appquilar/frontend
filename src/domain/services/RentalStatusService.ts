@@ -27,13 +27,13 @@ export class RentalStatusService {
    */
   static getStatusLabel(status: string): string {
     switch (status) {
-      case 'lead_pending': return 'Consulta pendiente';
+      case 'lead_pending': return 'Solicitud recibida';
       case 'proposal_pending_renter': return 'Propuesta enviada';
       case 'rental_confirmed': return 'Reserva confirmada';
-      case 'rental_active': return 'En alquiler';
-      case 'rental_completed': return 'Cerrado';
+      case 'rental_active': return 'Producto recogido';
+      case 'rental_completed': return 'Producto devuelto';
       case 'cancelled': return 'Cancelado';
-      case 'rejected': return 'Consulta rechazada';
+      case 'rejected': return 'Rechazado';
       case 'expired': return 'Propuesta expirada';
       default: return status;
     }

@@ -28,7 +28,7 @@ const getDepositResolution = (rental: Rental): string => {
     return 'Sin fianza';
   }
 
-  if (!rental.depositReturned) {
+  if (!rental.depositReturned || rental.depositReturned.amount <= 0) {
     return 'Pendiente';
   }
 
@@ -44,7 +44,7 @@ const getDepositResolutionDetail = (rental: Rental): string => {
     return 'No se ha requerido fianza para esta operacion.';
   }
 
-  if (!rental.depositReturned) {
+  if (!rental.depositReturned || rental.depositReturned.amount <= 0) {
     return 'Todavia no se ha registrado la devolucion de la fianza.';
   }
 
@@ -182,7 +182,7 @@ const RentalDetailsCard = ({
             label="Estado de la fianza"
             value={getDepositResolution(rental)}
             hint={
-              rental.depositReturned
+              rental.depositReturned && rental.depositReturned.amount > 0
                 ? `Devuelta: ${formatMoneyFromCents(rental.depositReturned.amount, rental.depositReturned.currency)}`
                 : 'Sin devolucion registrada todavia.'
             }

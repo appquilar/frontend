@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { billingService } from "@/compositionRoot";
 import type {
     MigrateCompanyToExplorerInput,
+    CreateCompanyUpgradeCheckoutSessionInput,
     CreateCheckoutSessionInput,
     CreateCustomerPortalSessionInput,
     SynchronizeCheckoutSessionInput,
@@ -11,6 +12,13 @@ export const useCreateCheckoutSession = () => {
     return useMutation({
         mutationFn: (input: CreateCheckoutSessionInput) =>
             billingService.createCheckoutSession(input),
+    });
+};
+
+export const useCreateCompanyUpgradeCheckoutSession = () => {
+    return useMutation({
+        mutationFn: (input: CreateCompanyUpgradeCheckoutSessionInput) =>
+            billingService.createCompanyUpgradeCheckoutSession(input),
     });
 };
 

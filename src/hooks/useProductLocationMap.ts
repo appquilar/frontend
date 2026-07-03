@@ -20,6 +20,16 @@ type UseProductLocationMapOptions = {
 
 type GoogleMapOverlay = google.maps.Polygon | google.maps.marker.AdvancedMarkerElement;
 
+const resolveMapErrorMessage = (error: unknown): string => {
+    const message = error instanceof Error ? error.message : String(error ?? "");
+
+    if (message.includes("RefererNotAllowedMapError")) {
+        return "Google Maps no permite este dominio. Revisa los referrers autorizados de la API key o abre la ubicación en Google Maps.";
+    }
+
+    return "No se pudo cargar el mapa en esta ficha. Puedes abrir la ubicación en Google Maps.";
+};
+
 const clearOverlay = (overlay: GoogleMapOverlay | null) => {
     if (!overlay) {
         return;
@@ -142,7 +152,7 @@ export const useProductLocationMap = ({
                 overlayRef.current = marker;
             } catch (error) {
                 console.error("Error initializing Google Maps:", error);
-                onError?.("No se pudo cargar el mapa en esta ficha. Puedes abrir la ubicación en Google Maps.");
+                onError?.(resolveMapErrorMessage(error));
             }
         };
 

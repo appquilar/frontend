@@ -95,7 +95,7 @@ dev-domains-setup:
 
 dev-domains-up: network dev-domains-setup
 	@echo "${GREEN}Starting API stack for local HTTPS domains...${NC}"
-	$(DOCKER_COMPOSE) -f ../api/docker-compose.yml up -d php mysql mysql_integration
+	$(DOCKER_COMPOSE) -f ../api/docker-compose.yml up -d php messenger mysql mysql_integration mailpit
 	@if ( [ -f .env ] && grep -Eiq '^VITE_LANDING_ONLY_MODE=(1|true|yes|on)$$' .env ) || ( [ -f .env.local ] && grep -Eiq '^VITE_LANDING_ONLY_MODE=(1|true|yes|on)$$' .env.local ); then \
 		echo "${GREEN}Landing-only mode detected. Syncing landing assets...${NC}"; \
 		$(NPM) run landing:sync; \

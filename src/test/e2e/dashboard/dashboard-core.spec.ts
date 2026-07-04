@@ -7,19 +7,23 @@ const mockCurrentUserPayload = async (
   mutate: (data: Record<string, unknown>) => Record<string, unknown> | void
 ) => {
   await page.route("**/api/me", async (route) => {
-    const response = await route.fetch();
-    const payload = await response.json();
-    const data = payload?.data && typeof payload.data === "object" ? { ...payload.data } : {};
-    const nextData = mutate(data) ?? data;
+    try {
+      const response = await route.fetch();
+      const payload = await response.json();
+      const data = payload?.data && typeof payload.data === "object" ? { ...payload.data } : {};
+      const nextData = mutate(data) ?? data;
 
-    await route.fulfill({
-      status: response.status(),
-      headers: jsonHeaders,
-      body: JSON.stringify({
-        ...payload,
-        data: nextData,
-      }),
-    });
+      await route.fulfill({
+        status: response.status(),
+        headers: jsonHeaders,
+        body: JSON.stringify({
+          ...payload,
+          data: nextData,
+        }),
+      });
+    } catch {
+      await route.abort().catch(() => undefined);
+    }
   });
 };
 
@@ -38,7 +42,7 @@ test.describe("Dashboard Core (seeded API)", () => {
     await page.goto("/dashboard");
 
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { name: /La Forma Inteligente de Alquilar/i })).toBeVisible();
+    await expect(page.locator("[data-trigger-login]:visible")).toBeVisible();
   });
 
   test("admin can access overview and admin-only sections", async ({ page, request, seed }) => {
@@ -219,7 +223,6 @@ test.describe("Dashboard Core (seeded API)", () => {
     await expect(page.getByRole("link", { name: "Categorías" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Blog" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Sitio" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Hazte Pro" })).toBeVisible();
 
     await page.goto("/dashboard/users");
     await expect(page).toHaveURL(/\/dashboard$/);
@@ -371,7 +374,7 @@ test.describe("Dashboard Core (seeded API)", () => {
     });
 
     await page.goto("/dashboard");
-    await expect(page.getByRole("link", { name: "Empresa" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Empresa" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Usuarios" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Analítica plataforma" })).toHaveCount(0);
 

@@ -107,8 +107,22 @@ test.describe("Dashboard Coverage Auth + Subscription Matrix", () => {
       description: "Modal branch test already exercises the terminal states explicitly.",
     });
 
+    const registeredEmail = "new.auth.coverage@appquilar.test";
     let loginAttempts = 0;
     await page.route("**/api/auth/login", async (route) => {
+      const body = route.request().postDataJSON() as { email?: string } | null;
+      if (body?.email === registeredEmail) {
+        await route.fulfill({
+          status: 200,
+          headers: jsonHeaders,
+          body: JSON.stringify({
+            success: true,
+            data: { token: "registered-auth-token" },
+          }),
+        });
+        return;
+      }
+
       loginAttempts += 1;
 
       if (loginAttempts === 1) {
@@ -129,6 +143,23 @@ test.describe("Dashboard Coverage Auth + Subscription Matrix", () => {
         body: JSON.stringify({
           success: false,
           error: ["auth.invalid_credentials"],
+        }),
+      });
+    });
+
+    await page.route("**/api/me", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: jsonHeaders,
+        body: JSON.stringify({
+          success: true,
+          data: {
+            id: "new-auth-coverage-user",
+            email: registeredEmail,
+            first_name: "Auth",
+            last_name: "Coverage",
+            roles: ["ROLE_USER"],
+          },
         }),
       });
     });
@@ -215,11 +246,20 @@ test.describe("Dashboard Coverage Auth + Subscription Matrix", () => {
       modal.getByText(/(correo electr[oó]nico o la contrase(?:n|ñ)a no son correctos|No se pudo iniciar sesi[oó]n\. Int[ée]ntalo de nuevo\.)/i)
     ).toBeVisible();
 
+    await expect(modal.getByRole("button", { name: "Recuperar" })).toHaveCount(0);
+    await modal.getByRole("button", { name: "¿Has olvidado tu contraseña?" }).click();
+    await modal.getByPlaceholder("tu@email.com").fill("user.e2e@appquilar.test");
+    await modal.getByRole("button", { name: /Enviar enlace de recuperaci[oó]n/ }).click();
+
+    await expect(
+      modal.getByText(/Te hemos enviado un correo con instrucciones para restablecer tu contrase(?:n|ñ)a/i)
+    ).toBeVisible();
+
     await modal.getByRole("button", { name: "Registrarse" }).click();
 
     await modal.getByPlaceholder("Tu nombre").fill("Auth");
     await modal.getByPlaceholder("Tus apellidos").fill("Coverage");
-    await modal.getByPlaceholder("tu@email.com").fill("new.auth.coverage@appquilar.test");
+    await modal.getByPlaceholder("tu@email.com").fill(registeredEmail);
     await modal.getByPlaceholder("••••••••").fill("E2Epass!123");
 
     await modal.getByRole("button", { name: "Crear cuenta" }).click();
@@ -235,17 +275,8 @@ test.describe("Dashboard Coverage Auth + Subscription Matrix", () => {
     await expect(modal.getByText("Registro temporalmente deshabilitado")).toBeVisible();
 
     await modal.getByRole("button", { name: "Crear cuenta" }).click();
-    await expect(modal.getByText(/Tu cuenta se ha creado correctamente/i)).toBeVisible();
-    await expect(modal.locator("button[type='submit']").first()).toHaveText(/Iniciar sesi[oó]n/);
-
-    await expect(modal.getByRole("button", { name: "Recuperar" })).toHaveCount(0);
-    await modal.getByRole("button", { name: "¿Has olvidado tu contraseña?" }).click();
-    await modal.getByPlaceholder("tu@email.com").fill("user.e2e@appquilar.test");
-    await modal.getByRole("button", { name: /Enviar enlace de recuperaci[oó]n/ }).click();
-
-    await expect(
-      modal.getByText(/Te hemos enviado un correo con instrucciones para restablecer tu contrase(?:n|ñ)a/i)
-    ).toBeVisible();
+    await expect(modal).toBeHidden();
+    await expect(page.getByRole("button", { name: /Hola Auth Coverage/i })).toBeVisible();
   });
 
   test("reset password covers mismatch, backend error and success branches", async ({ page }, testInfo) => {

@@ -110,7 +110,7 @@ test("login surfaces invalid credentials, forgot-password returns with an info b
   await expect(page.locator("[data-trigger-login]:visible")).toBeVisible();
 });
 
-test("register shows server-side validation errors and returns to sign-in with the success message", async ({
+test("register shows server-side validation errors and then starts an authenticated session", async ({
   page,
 }) => {
   let registerAttempts = 0;
@@ -154,6 +154,23 @@ test("register shows server-side validation errors and returns to sign-in with t
     });
   });
 
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: {
+          id: "user-2",
+          email: "nuevo@appquilar.test",
+          first_name: "Nuevo",
+          last_name: "Usuario",
+          roles: ["ROLE_USER"],
+        },
+      }),
+    });
+  });
+
   await page.goto("/");
   await page.locator("[data-trigger-login]:visible").click();
 
@@ -172,10 +189,6 @@ test("register shows server-side validation errors and returns to sign-in with t
   await modal.getByPlaceholder("••••••••").fill("AnotherPass1!");
   await modal.getByRole("button", { name: "Crear cuenta" }).click();
 
-  await expect(
-    modal.getByText(
-      "Tu cuenta se ha creado correctamente. Ahora puedes iniciar sesión con tu correo y contraseña."
-    )
-  ).toBeVisible();
-  await expect(modal.getByText("Accede a tu cuenta")).toBeVisible();
+  await expect(modal).toBeHidden();
+  await expect(page.getByRole("button", { name: /Hola Nuevo Usuario/i })).toBeVisible();
 });

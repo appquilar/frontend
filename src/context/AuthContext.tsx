@@ -89,6 +89,8 @@ export const useAuth = (): AuthContextType => {
 //
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [authBlockMessage, setAuthBlockMessage] = useState<string | null>(null);
+    const [, forceAuthRender] = useState(0);
+
     const { user: currentUser, isLoading: isCurrentUserLoading, error } = useCurrentUser();
     const resolvedAuthBlockMessage = error
         ? resolveAuthBlockMessage(error)
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const resetQueryCacheForIdentity = async (user: User | null) => {
         setCurrentUserQueryData(user);
+        forceAuthRender((current) => current + 1);
         await queryClient.invalidateQueries({
             predicate: (query) => query.queryKey[0] !== "currentUser",
         });

@@ -1,6 +1,32 @@
-import { expect, test } from "./fixtures";
+import { expect, test, type Page } from "./fixtures";
 
 const invitationPath = "/company-invitation?company_id=company-1&token=seed-token";
+const jsonHeaders = { "content-type": "application/json" };
+
+const routeInvitationStatus = async (page: Page, email: string) => {
+  await page.route("**/api/companies/company-1/invitations/seed-token", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          email,
+          company_name: "Herramientas Norte",
+          role: "ROLE_CONTRIBUTOR",
+          status: "PENDING",
+          expires_at: null,
+        },
+      }),
+    });
+  });
+};
+
+const routeInvitationAccept = async (page: Page) => {
+  await page.route("**/api/companies/company-1/invitations/seed-token/accept", async (route) => {
+    await route.fulfill({ status: 204 });
+  });
+};
 
 test.describe("Dashboard Coverage Targeted", () => {
   test.describe.configure({ mode: "parallel" });
@@ -14,6 +40,8 @@ test.describe("Dashboard Coverage Targeted", () => {
     await page.goto("/company-invitation");
     await expect(page.getByText("Falta `company_id` o `token` en el enlace.")).toBeVisible();
 
+    await routeInvitationStatus(page, "");
+
     await page.goto(invitationPath);
     await expect(
       page.getByText("Falta el email invitado en el enlace. Solicita una nueva invitación.")
@@ -21,6 +49,9 @@ test.describe("Dashboard Coverage Targeted", () => {
   });
 
   test("company invitation accepts with existing account", async ({ page }) => {
+    await routeInvitationStatus(page, "user.e2e@appquilar.test");
+    await routeInvitationAccept(page);
+
     await page.goto(`${invitationPath}&email=user.e2e@appquilar.test`);
     await page.getByPlaceholder("••••••••").fill("E2Epass!123");
     await page.getByRole("button", { name: "Acceder y aceptar invitación" }).click();
@@ -31,6 +62,8 @@ test.describe("Dashboard Coverage Targeted", () => {
 
   test("company invitation accepts as already authenticated user", async ({ page, request, seed }) => {
     await seed.loginAs(page, request, "user");
+    await routeInvitationStatus(page, "user.e2e@appquilar.test");
+    await routeInvitationAccept(page);
 
     await page.goto(`${invitationPath}&email=user.e2e@appquilar.test`);
     await page.getByRole("button", { name: "Aceptar invitación" }).click();

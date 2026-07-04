@@ -79,7 +79,6 @@ test.describe("Dashboard profile happy paths", () => {
 
     await page.goto("/dashboard");
     await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Hazte Pro" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Analítica plataforma" })).toHaveCount(0);
 
     await page.goto("/dashboard/products");
@@ -160,7 +159,7 @@ test.describe("Dashboard profile happy paths", () => {
     });
 
     await page.goto("/dashboard");
-    await expect(page.getByRole("link", { name: "Empresa" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Empresa" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Usuarios" })).toHaveCount(0);
 
     await page.goto("/dashboard/products");

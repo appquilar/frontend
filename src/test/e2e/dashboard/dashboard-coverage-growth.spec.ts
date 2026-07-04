@@ -1,9 +1,28 @@
-import { expect, test } from "./fixtures";
+import { expect, test, type Page } from "./fixtures";
 import { selectAvailableRentalDates } from "../dateRangePicker";
 
 const invitationBasePath = "/company-invitation?company_id=company-1&token=seed-token";
 
 const jsonHeaders = { "content-type": "application/json" };
+
+const routePendingInvitationStatus = async (page: Page, email: string) => {
+  await page.route("**/api/companies/company-1/invitations/seed-token", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          email,
+          company_name: "Herramientas Norte",
+          role: "ROLE_CONTRIBUTOR",
+          status: "PENDING",
+          expires_at: null,
+        },
+      }),
+    });
+  });
+};
 
 test.describe("Dashboard Coverage Growth", () => {
   test.describe.configure({ mode: "parallel" });
@@ -14,6 +33,8 @@ test.describe("Dashboard Coverage Growth", () => {
   });
 
   test("company invitation maps API error branches and server field errors", async ({ page }) => {
+    await routePendingInvitationStatus(page, "coverage.new@appquilar.test");
+
     let acceptAttempts = 0;
 
     await page.route("**/api/companies/company-1/invitations/seed-token/accept", async (route) => {
@@ -70,6 +91,8 @@ test.describe("Dashboard Coverage Growth", () => {
       type: "skipCoverageExploration",
       description: "Invitation success flow already asserts the final redirected state.",
     });
+
+    await routePendingInvitationStatus(page, "brand.new@appquilar.test");
 
     await page.route("**/api/companies/company-1/invitations/seed-token/accept", async (route) => {
       await route.fulfill({ status: 204 });

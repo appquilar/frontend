@@ -85,6 +85,7 @@ describe("CompanyFormPage", () => {
         useAuthMock.mockReturnValue({
             currentUser: {
                 companyId: "company-1",
+                isCompanyOwner: true,
                 roles: [UserRole.REGULAR_USER],
             },
             hasRole: vi.fn().mockReturnValue(false),

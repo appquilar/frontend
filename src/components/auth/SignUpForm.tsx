@@ -97,7 +97,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                     control={form.control}
                     render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[12px] font-medium text-muted-foreground">Nombre</FormLabel>
+                            <FormLabel htmlFor="signup-first-name" className="text-[12px] font-medium text-muted-foreground">Nombre</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <User
@@ -105,6 +105,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
+                                        id="signup-first-name"
                                         {...field}
                                         placeholder="Tu nombre"
                                         className="h-11 rounded-lg border-border/80 pl-10"
@@ -121,7 +122,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                     control={form.control}
                     render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[12px] font-medium text-muted-foreground">Apellido</FormLabel>
+                            <FormLabel htmlFor="signup-last-name" className="text-[12px] font-medium text-muted-foreground">Apellido</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <User
@@ -129,6 +130,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
+                                        id="signup-last-name"
                                         {...field}
                                         placeholder="Tus apellidos"
                                         className="h-11 rounded-lg border-border/80 pl-10"
@@ -145,7 +147,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                     control={form.control}
                     render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[12px] font-medium text-muted-foreground">Correo electrónico</FormLabel>
+                            <FormLabel htmlFor="signup-email" className="text-[12px] font-medium text-muted-foreground">Correo electrónico</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Mail
@@ -153,6 +155,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
+                                        id="signup-email"
                                         {...field}
                                         type="email"
                                         placeholder="tu@email.com"
@@ -170,7 +173,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                     control={form.control}
                     render={({ field }) => (
                         <FormItem className="space-y-1.5">
-                            <FormLabel className="text-[12px] font-medium text-muted-foreground">Contraseña</FormLabel>
+                            <FormLabel htmlFor="signup-password" className="text-[12px] font-medium text-muted-foreground">Contraseña</FormLabel>
                             <FormControl>
                                 <div className="relative">
                                     <Lock
@@ -178,6 +181,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
+                                        id="signup-password"
                                         {...field}
                                         type="password"
                                         placeholder="••••••••"

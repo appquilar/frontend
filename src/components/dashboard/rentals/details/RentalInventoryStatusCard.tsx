@@ -82,6 +82,7 @@ const RentalInventoryStatusCard = ({ rental, viewerRole }: RentalInventoryStatus
   const currentAllocation = (allocationsQuery.data ?? []).find(
     (allocation) => allocation.rentId === rental.id && allocation.state !== "released",
   ) ?? null;
+  const shouldHaveActiveAllocation = rental.status === "rental_confirmed" || rental.status === "rental_active";
   const assignedUnitIds = currentAllocation?.assignedUnitIds ?? [];
   const assignedUnits = (unitsQuery.data ?? []).filter((unit) => assignedUnitIds.includes(unit.unitId));
   const productHref = `/dashboard/products/${rental.productId}`;
@@ -132,6 +133,12 @@ const RentalInventoryStatusCard = ({ rental, viewerRole }: RentalInventoryStatus
                 </Badge>
               )}
             </div>
+
+            {shouldHaveActiveAllocation && !currentAllocation && (
+              <p className="rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                Este alquiler no tiene una reserva automática de inventario. Revisa que el producto tenga inventario gestionado activo si esperas bloqueo de unidades.
+              </p>
+            )}
 
             {inventory.inventoryMode === "managed_serialized" && (
               <div className="space-y-3">

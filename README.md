@@ -127,6 +127,12 @@ make stripe-check-account
 make stripe-listen
 ```
 
+For the host-local API on `http://127.0.0.1:8000`, override the forward target:
+
+```bash
+STRIPE_FORWARD_TO=http://127.0.0.1:8000/api/billing/webhook/stripe make stripe-listen
+```
+
 After `stripe login` is already done, the local Stripe flow is:
 
 1. Run `make up`.
@@ -142,6 +148,7 @@ docker-compose -f /Users/victor/development/appquilar/api/docker-compose.yml res
 ```
 
 You do not need to create a new Stripe Dashboard webhook for local development. Keep `make stripe-listen` running while testing billing.
+The local listener forwards the same billing event families handled by the API: Checkout completion/expiration, subscription lifecycle updates, paid invoices, payment failures, and payments requiring customer action.
 
 Domains:
 

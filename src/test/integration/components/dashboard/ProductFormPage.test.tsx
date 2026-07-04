@@ -12,12 +12,14 @@ const {
   updateProductMutateMock,
   useProductMock,
   useProductOwnerAddressMock,
+  useProductPublicationLimitMock,
   productEditFormState,
 } = vi.hoisted(() => ({
   createProductMutateMock: vi.fn(),
   updateProductMutateMock: vi.fn(),
   useProductMock: vi.fn(),
   useProductOwnerAddressMock: vi.fn(),
+  useProductPublicationLimitMock: vi.fn(),
   productEditFormState: {
     payload: {} as Partial<Product>,
   },
@@ -35,6 +37,10 @@ vi.mock("@/application/hooks/useProducts", () => ({
 
 vi.mock("@/application/hooks/useProductOwnerAddress", () => ({
   useProductOwnerAddress: () => useProductOwnerAddressMock(),
+}));
+
+vi.mock("@/components/dashboard/products/hooks/useProductPublicationLimit", () => ({
+  useProductPublicationLimit: () => useProductPublicationLimitMock(),
 }));
 
 vi.mock("@/components/dashboard/ProductEditForm", () => ({
@@ -76,6 +82,13 @@ describe("ProductFormPage", () => {
       companyId: "company-1",
       settingsHref: "/dashboard/companies/company-1",
     });
+    useProductPublicationLimitMock.mockReturnValue({
+      hasReachedProductPublicationLimit: false,
+      publicationLimitCtaLabel: null,
+      handlePublicationLimitCta: vi.fn(),
+      isProcessingPublicationLimitCta: false,
+      isPublicationLimitLoading: false,
+    });
     productEditFormState.payload = {
       id: "product-1",
       name: "Castillo inflable",
@@ -105,6 +118,28 @@ describe("ProductFormPage", () => {
         montaje_incluido: true,
       },
     };
+  });
+
+  it("does not render the product form when the publication limit is reached", () => {
+    useProductPublicationLimitMock.mockReturnValue({
+      hasReachedProductPublicationLimit: true,
+      publicationLimitCtaLabel: "Hazte Pro",
+      handlePublicationLimitCta: vi.fn(),
+      isProcessingPublicationLimitCta: false,
+      isPublicationLimitLoading: false,
+    });
+
+    renderWithProviders(
+      <Routes>
+        <Route path="/dashboard/products/:productId" element={<ProductFormPage />} />
+        <Route path="/dashboard/products" element={<div>products-list</div>} />
+      </Routes>,
+      { route: "/dashboard/products/new" }
+    );
+
+    expect(screen.getByText("Límite de productos alcanzado")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "save-product" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hazte Pro" })).toBeInTheDocument();
   });
 
   it("sends the active company id when creating a company product", async () => {

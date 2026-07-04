@@ -84,6 +84,8 @@ make stripe-listen
 https://dev.api.appquilar.com/api/billing/webhook/stripe
 ```
 
+The forwarded events include Checkout completion/expiration, subscription lifecycle updates, paid invoices, payment failures, and payments requiring customer action. The backend records processed Stripe event IDs, so repeated webhook deliveries are ignored after the first successful processing.
+
 When Stripe CLI prints a webhook signing secret, copy it into a local backend override:
 
 ```bash

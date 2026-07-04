@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,9 @@ export const InviteUserDialog = ({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Invitar usuario</DialogTitle>
+                    <DialogDescription>
+                        Envia una invitacion para que otra persona acceda a esta empresa.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -122,4 +125,3 @@ export const InviteUserDialog = ({
         </Dialog>
     );
 };
-

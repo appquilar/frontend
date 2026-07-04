@@ -275,7 +275,7 @@ const ProductPage: React.FC = () => {
 
     const handleContactRequest = () => {
         if (!isLoggedIn) {
-            toast.error("Debes iniciar sesión para contactar con el propietario");
+            toast.error("Debes iniciar sesión para solicitar el alquiler");
             return;
         }
 

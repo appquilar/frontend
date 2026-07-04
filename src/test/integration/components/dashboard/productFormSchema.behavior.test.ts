@@ -85,7 +85,7 @@ describe("productFormSchema", () => {
     });
   });
 
-  it("rejects negative pricing values and missing tier prices", () => {
+  it("rejects negative pricing values but allows blank draft tier prices", () => {
     const result = productFormSchema.safeParse({
       internalId: "SKU-1",
       name: "Taladro",
@@ -120,7 +120,86 @@ describe("productFormSchema", () => {
     expect(result.error?.flatten().fieldErrors.price?.join(" ")).toContain(
       "La fianza debe ser mayor o igual a 0"
     );
-    expect(result.error?.issues.some((issue) => issue.message === "Precio obligatorio")).toBe(true);
+    expect(result.error?.issues.some((issue) => issue.message === "Precio obligatorio")).toBe(false);
+  });
+
+  it("allows incomplete draft products", () => {
+    const result = productFormSchema.safeParse({
+      internalId: "",
+      name: "",
+      slug: "",
+      description: "",
+      publicationStatus: "draft",
+      quantity: 1,
+      isRentalEnabled: true,
+      isInventoryEnabled: false,
+      inventoryMode: "unmanaged",
+      price: {
+        daily: 0,
+        deposit: "",
+        tiers: [
+          {
+            daysFrom: 1,
+            pricePerDay: "",
+          },
+        ],
+      },
+      productType: "rental",
+      category: {
+        id: null,
+        name: "",
+        slug: "",
+      },
+      images: [],
+      dynamicProperties: {},
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.price.tiers[0]?.pricePerDay).toBe(0);
+  });
+
+  it("requires quality fields before publishing", () => {
+    const result = productFormSchema.safeParse({
+      internalId: "",
+      name: "",
+      slug: "",
+      description: "",
+      publicationStatus: "published",
+      quantity: 1,
+      isRentalEnabled: true,
+      isInventoryEnabled: false,
+      inventoryMode: "unmanaged",
+      price: {
+        daily: 0,
+        deposit: "",
+        tiers: [
+          {
+            daysFrom: 1,
+            pricePerDay: "",
+          },
+        ],
+      },
+      productType: "rental",
+      category: {
+        id: null,
+        name: "",
+        slug: "",
+      },
+      images: [],
+      dynamicProperties: {},
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.message)).toEqual(
+      expect.arrayContaining([
+        "El nombre es obligatorio para publicar",
+        "El slug es obligatorio para publicar",
+        "La descripción es obligatoria para publicar",
+        "La categoría es obligatoria para publicar",
+        "Añade al menos una imagen para publicar",
+        "Añade un precio diario mayor que 0 para publicar",
+      ])
+    );
   });
 
   it("maps image ids and inventory defaults from product data into the form view model", () => {

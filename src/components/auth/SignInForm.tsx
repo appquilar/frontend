@@ -144,7 +144,7 @@ const SignInForm = ({
                         rules={{ required: "El email es obligatorio" }}
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="text-[12px] font-medium text-muted-foreground">
+                                <FormLabel htmlFor="signin-email" className="text-[12px] font-medium text-muted-foreground">
                                     Correo electrónico
                                 </FormLabel>
                                 <FormControl>
@@ -154,6 +154,7 @@ const SignInForm = ({
                                             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                         />
                                         <Input
+                                            id="signin-email"
                                             type="email"
                                             placeholder="tu@email.com"
                                             className="h-11 rounded-lg border-border/80 pl-10"
@@ -172,7 +173,7 @@ const SignInForm = ({
                         rules={{ required: "La contraseña es obligatoria" }}
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                                <FormLabel className="text-[12px] font-medium text-muted-foreground">
+                                <FormLabel htmlFor="signin-password" className="text-[12px] font-medium text-muted-foreground">
                                     Contraseña
                                 </FormLabel>
                                 <FormControl>
@@ -182,6 +183,7 @@ const SignInForm = ({
                                             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                         />
                                         <Input
+                                            id="signin-password"
                                             type="password"
                                             placeholder="••••••••"
                                             className="h-11 rounded-lg border-border/80 pl-10"

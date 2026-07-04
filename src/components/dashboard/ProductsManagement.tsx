@@ -45,6 +45,11 @@ const ProductsManagement = () => {
     } = useProductsManagement();
 
     const handleAddProduct = () => {
+        if (hasReachedProductPublicationLimit) {
+            toast.error("Has alcanzado el límite de productos publicados de tu plan.");
+            return;
+        }
+
         if (!canCreateProduct) {
             toast.error(
                 ownerType === "company"
@@ -82,7 +87,7 @@ const ProductsManagement = () => {
                 onFilterChange={handleFilterChange}
                 onAddProduct={handleAddProduct}
                 onSearch={handleSearch}
-                isAddDisabled={!canCreateProduct}
+                isAddDisabled={!canCreateProduct || hasReachedProductPublicationLimit}
             />
 
             <ProductGrid
@@ -95,7 +100,7 @@ const ProductsManagement = () => {
                 isProcessingPublicationLimitCta={isProcessingPublicationLimitCta}
                 onDelete={openDeleteModal}
                 onAdd={handleAddProduct}
-                isAddDisabled={!canCreateProduct}
+                isAddDisabled={!canCreateProduct || hasReachedProductPublicationLimit}
                 shouldShowMissingAddressMessage={!isProductOwnerAddressLoading && !hasRequiredAddress}
                 missingAddressHref={settingsHref}
                 missingAddressOwnerType={ownerType}

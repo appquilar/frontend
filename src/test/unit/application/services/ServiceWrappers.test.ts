@@ -236,7 +236,16 @@ describe("application service wrappers", () => {
       getCompanyStats: createMockFn(async () => ({ summary: { totalViews: 10 } })),
       trackProductView: createMockFn(() => undefined),
     };
-    const companyInvitationRepository = { acceptInvitation: createMockFn(async () => undefined) };
+    const companyInvitationRepository = {
+      getInvitationStatus: createMockFn(async () => ({
+        email: "new@appquilar.test",
+        companyName: "Rentals QA",
+        role: "ROLE_CONTRIBUTOR",
+        status: "PENDING",
+        expiresAt: null,
+      })),
+      acceptInvitation: createMockFn(async () => undefined),
+    };
     const companyMembershipRepository = {
       createCompany: createMockFn(async () => undefined),
       listCompanyUsers: createMockFn(async () => []),
@@ -302,6 +311,16 @@ describe("application service wrappers", () => {
       summary: { totalViews: 10 },
     });
     companyEngagementService.trackProductView({ productId: "product-1" } as never);
+    await expect(companyInvitationService.getInvitationStatus({
+      companyId: "company-1",
+      token: "invitation",
+    })).resolves.toEqual({
+      email: "new@appquilar.test",
+      companyName: "Rentals QA",
+      role: "ROLE_CONTRIBUTOR",
+      status: "PENDING",
+      expiresAt: null,
+    });
     await companyInvitationService.acceptInvitation({ token: "invitation" } as never);
     await companyMembershipService.createCompany({ companyId: "company-1" } as never);
     await companyMembershipService.listCompanyUsers("company-1", 3, 25);

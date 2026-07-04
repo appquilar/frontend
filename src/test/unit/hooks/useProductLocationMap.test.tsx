@@ -14,6 +14,7 @@ const {
     polygonConstructorMock,
     markerAppendMock,
     geocodeMock,
+    authFailureListeners,
 } = vi.hoisted(() => ({
     getGoogleMapsMapIdMock: vi.fn(),
     loadGoogleMapsMock: vi.fn(),
@@ -25,11 +26,22 @@ const {
     polygonConstructorMock: vi.fn(),
     markerAppendMock: vi.fn(),
     geocodeMock: vi.fn(),
+    authFailureListeners: [] as Array<(error: Error) => void>,
 }));
 
 vi.mock("@/infrastructure/google/GoogleMapsLoader", () => ({
     getGoogleMapsMapId: () => getGoogleMapsMapIdMock(),
     loadGoogleMaps: (...args: unknown[]) => loadGoogleMapsMock(...args),
+    subscribeGoogleMapsAuthFailure: (listener: (error: Error) => void) => {
+        authFailureListeners.push(listener);
+
+        return () => {
+            const index = authFailureListeners.indexOf(listener);
+            if (index >= 0) {
+                authFailureListeners.splice(index, 1);
+            }
+        };
+    },
 }));
 
 const createGoogleMapsApi = () => {
@@ -105,6 +117,7 @@ const createGoogleMapsApi = () => {
 describe("useProductLocationMap", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        authFailureListeners.splice(0, authFailureListeners.length);
         getGoogleMapsMapIdMock.mockReturnValue("map-id");
         loadGoogleMapsMock.mockResolvedValue(createGoogleMapsApi());
     });
@@ -251,5 +264,36 @@ describe("useProductLocationMap", () => {
                 "No se pudo cargar el mapa en esta ficha. Puedes abrir la ubicación en Google Maps."
             );
         });
+    });
+
+    it("reports Google auth failures and lets the UI remove the broken map", async () => {
+        const onError = vi.fn();
+        const container = document.createElement("div");
+        container.appendChild(document.createElement("span"));
+
+        renderHook(() =>
+            useProductLocationMap({
+                containerRef: {
+                    current: container,
+                },
+                city: "Madrid",
+                state: "Madrid",
+                coordinates: [-3.7038, 40.4168],
+                onError,
+            })
+        );
+
+        await waitFor(() => {
+            expect(authFailureListeners).toHaveLength(1);
+        });
+
+        act(() => {
+            authFailureListeners[0](new Error("RefererNotAllowedMapError"));
+        });
+
+        expect(onError).toHaveBeenCalledWith(
+            "Google Maps no permite este dominio. Revisa los referrers autorizados de la API key o abre la ubicación en Google Maps."
+        );
+        expect(container.childElementCount).toBe(0);
     });
 });

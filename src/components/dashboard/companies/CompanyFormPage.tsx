@@ -29,6 +29,8 @@ import CompanyImageField from "./CompanyImageField";
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "@/components/dashboard/forms/image-upload/imageUtils";
 import { AdminCompanyStatsSection } from "@/components/dashboard/stats/AdminCompanyStatsSection";
 import { UserRole } from "@/domain/models/UserRole";
+import { isCompanyAdminUser, isCompanyOwnerUser } from "@/domain/models/User";
+import AccessRestricted from "@/components/dashboard/user-management/AccessRestricted";
 
 const DEFAULT_PHONE_COUNTRY_CODE = "ES";
 const DEFAULT_PHONE_PREFIX = "+34";
@@ -93,6 +95,7 @@ const CompanyFormPage = () => {
 
     const resolvedCompanyId = companyId ?? id ?? currentUser?.companyId ?? null;
     const isPlatformAdmin = hasRole(UserRole.ADMIN);
+    const canManageCompany = isPlatformAdmin || isCompanyOwnerUser(currentUser) || isCompanyAdminUser(currentUser);
     const profileQuery = useCompanyProfile(resolvedCompanyId);
     const updateMutation = useUpdateCompanyProfile();
     const { uploadImage, deleteImage } = useMediaActions();
@@ -318,6 +321,10 @@ const CompanyFormPage = () => {
                 </p>
             </div>
         );
+    }
+
+    if (!canManageCompany) {
+        return <AccessRestricted />;
     }
 
     if (profileQuery.isLoading) {

@@ -45,6 +45,6 @@ describe("CompanyInfo", () => {
         expect(screen.getByRole("link", { name: "Ver empresa" })).toHaveAttribute("href", "/empresa/empresote");
         expect(screen.getByText("Catálogo profesional para eventos.")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Crear cuenta para contactar" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "Contactar con el proveedor" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Solicitar alquiler" })).not.toBeInTheDocument();
     });
 });

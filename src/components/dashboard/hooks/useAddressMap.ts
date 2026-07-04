@@ -10,6 +10,7 @@ import {
     reverseGeocode,
     type LatLngLiteral,
 } from "@/infrastructure/google/GoogleMapsAdapter";
+import { subscribeGoogleMapsAuthFailure } from "@/infrastructure/google/GoogleMapsLoader";
 
 /**
  * Hook que encapsula toda la lógica de:
@@ -47,6 +48,18 @@ export function useAddressMap<T extends AddressMapFormValues>(
 
         if (!enabled || !mapContainerRef.current) return;
 
+        const unsubscribeAuthFailure = subscribeGoogleMapsAuthFailure(() => {
+            if (!isMounted) {
+                return;
+            }
+
+            mapContainerRef.current?.replaceChildren();
+            setIsMapsLoading(false);
+            setMapsError(
+                "Google Maps no permite este dominio. Puedes guardar la dirección manualmente o abrir la ubicación en Google Maps.",
+            );
+        });
+
         const init = async () => {
             try {
                 setIsMapsLoading(true);
@@ -75,9 +88,10 @@ export function useAddressMap<T extends AddressMapFormValues>(
                 map = createdMap;
                 marker = createdMarker;
 
-                // Aseguramos que el form tiene coords iniciales
-                addressForm.setValue("latitude" as any, initialPosition.lat as any);
-                addressForm.setValue("longitude" as any, initialPosition.lng as any);
+                if (hasCoords) {
+                    addressForm.setValue("latitude" as any, initialPosition.lat as any);
+                    addressForm.setValue("longitude" as any, initialPosition.lng as any);
+                }
 
                 // Cuando se suelta el marker -> coords + reverse geocode
                 marker.addListener("dragend", async () => {
@@ -168,6 +182,7 @@ export function useAddressMap<T extends AddressMapFormValues>(
 
         return () => {
             isMounted = false;
+            unsubscribeAuthFailure();
             disposeAutocomplete?.();
             if (marker && (window as any).google?.maps?.event) {
                 (window as any).google.maps.event.clearInstanceListeners(marker);

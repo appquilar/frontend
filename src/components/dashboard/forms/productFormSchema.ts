@@ -48,8 +48,12 @@ const optionalNonNegativeNumberSchema = (message: string) =>
         return parsedValue;
     });
 
-const requiredNonNegativeNumberSchema = (requiredMessage: string, invalidMessage = requiredMessage) =>
-    z.union([z.string(), z.number()]).transform((value, ctx) => {
+const draftNonNegativeNumberSchema = (invalidMessage: string) =>
+    z.union([z.string(), z.number(), z.undefined()]).transform((value, ctx) => {
+        if (value === undefined) {
+            return 0;
+        }
+
         if (typeof value === 'number') {
             if (Number.isFinite(value) && value >= 0) {
                 return value;
@@ -66,12 +70,7 @@ const requiredNonNegativeNumberSchema = (requiredMessage: string, invalidMessage
         const normalized = normalizeDecimalInput(value);
 
         if (normalized === '') {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: requiredMessage,
-            });
-
-            return z.NEVER;
+            return 0;
         }
 
         const parsedValue = Number(normalized);
@@ -90,9 +89,9 @@ const requiredNonNegativeNumberSchema = (requiredMessage: string, invalidMessage
 
 export const productFormSchema = z.object({
     internalId: z.string().optional(),
-    name: z.string().min(1, { message: 'El nombre es obligatorio' }),
-    slug: z.string().min(1, { message: 'El slug es obligatorio' }),
-    description: z.string().min(1, { message: 'La descripción es obligatoria' }),
+    name: z.string().default(''),
+    slug: z.string().default(''),
+    description: z.string().default(''),
     imageUrl: z.string().optional(),
     thumbnailUrl: z.string().optional(),
     publicationStatus: z.enum(['draft', 'published', 'archived']).default('draft'),
@@ -107,8 +106,8 @@ export const productFormSchema = z.object({
         tiers: z.array(z.object({
             daysFrom: z.coerce.number().min(1, { message: 'Debe ser al menos 1' }),
             daysTo: z.coerce.number().nullable().optional(),
-            pricePerDay: requiredNonNegativeNumberSchema('Precio obligatorio', 'El precio debe ser mayor o igual a 0'),
-        })).min(1, { message: 'Añade al menos un tramo de precio' }),
+            pricePerDay: draftNonNegativeNumberSchema('El precio debe ser mayor o igual a 0'),
+        })).default([]),
     }),
     secondHand: z.object({
         price: z.coerce.number().optional(),
@@ -119,13 +118,69 @@ export const productFormSchema = z.object({
     isForSale: z.boolean().optional(),
     productType: z.enum(['rental', 'sale']),
     category: z.object({
-        id: z.string().min(1, { message: "La categoría es obligatoria" }).nullable(),
+        id: z.string().nullable().optional(),
         name: z.string().optional(),
         slug: z.string().optional(),
     }),
     currentTab: z.string().optional(),
     images: z.array(productImageSchema).default([]),
     dynamicProperties: z.record(z.string(), z.unknown()).default({}),
+}).superRefine((values, ctx) => {
+    if (values.publicationStatus !== 'published') {
+        return;
+    }
+
+    if (values.name.trim().length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['name'],
+            message: 'El nombre es obligatorio para publicar',
+        });
+    }
+
+    if (values.slug.trim().length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['slug'],
+            message: 'El slug es obligatorio para publicar',
+        });
+    }
+
+    if (values.description.trim().length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['description'],
+            message: 'La descripción es obligatoria para publicar',
+        });
+    }
+
+    if (!values.category.id) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['category', 'id'],
+            message: 'La categoría es obligatoria para publicar',
+        });
+    }
+
+    if (values.images.length === 0) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['images'],
+            message: 'Añade al menos una imagen para publicar',
+        });
+    }
+
+    const firstPositivePriceIndex = values.price.tiers.findIndex(
+        (tier) => Number(tier.pricePerDay) > 0
+    );
+
+    if (firstPositivePriceIndex === -1) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['price', 'tiers', 0, 'pricePerDay'],
+            message: 'Añade un precio diario mayor que 0 para publicar',
+        });
+    }
 });
 
 export type ProductFormValues = z.input<typeof productFormSchema>;

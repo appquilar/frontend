@@ -145,6 +145,11 @@ npm install
 npm run dev
 ```
 
+When QA runs the frontend directly through Vite at `http://127.0.0.1:5173`,
+start the Symfony API with `APP_FE_HOST=http://127.0.0.1:5173` so transactional
+email links point back to the tested frontend. The default `localhost:8080`
+matches the Docker/Make development stack.
+
 ### Production mode (Nginx + static build)
 
 ```

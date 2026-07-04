@@ -87,6 +87,44 @@ describe("ApiProductRepository", () => {
         ]);
     });
 
+    it("defaults omitted public inventory fields to unmanaged inventory", async () => {
+        apiClient.get.mockResolvedValue({
+            success: true,
+            data: [
+                {
+                    id: "product-1",
+                    name: "Silla plegable",
+                    slug: "silla-plegable",
+                    description: "Sin campos de inventario público",
+                    publication_status: "published",
+                    image_ids: [],
+                    categories: [
+                        {
+                            id: "category-1",
+                            name: "Eventos",
+                            slug: "eventos",
+                        },
+                    ],
+                },
+            ],
+            total: 1,
+            page: 1,
+        });
+
+        const repository = new ApiProductRepository(
+            apiClient as unknown as ConstructorParameters<typeof ApiProductRepository>[0],
+            () => null
+        );
+
+        const result = await repository.search({
+            page: 1,
+            per_page: 50,
+        });
+
+        expect(result.data[0].isInventoryEnabled).toBe(false);
+        expect(result.data[0].inventoryMode).toBe("unmanaged");
+    });
+
     it("does not forward auth headers on public search even when a session exists", async () => {
         apiClient.get.mockResolvedValue({
             success: true,

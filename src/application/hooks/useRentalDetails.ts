@@ -15,7 +15,9 @@ interface UseRentalDetailsReturn {
   error: string | null;
   isUpdatingStatus: boolean;
   isUpdatingRental: boolean;
+  isResolvingDeposit: boolean;
   canEditRental: boolean;
+  canResolveDeposit: boolean;
   viewerRole: RentActorRole;
   nextTransitions: RentTransitionOption[];
   handleStatusChange: (input: { status: RentStatus; proposalValidUntil?: Date | null }) => Promise<void>;
@@ -26,6 +28,7 @@ interface UseRentalDetailsReturn {
     deposit?: Money;
     price?: Money;
   }) => Promise<void>;
+  handleDepositResolution: (depositReturned: Money) => Promise<void>;
   calculateDurationDays: () => number;
   formatDate: (date: Date) => string;
 }
@@ -62,6 +65,8 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
       await queryClient.invalidateQueries({ queryKey: ['rentConversations'] });
       if (rentalQuery.data?.productId) {
         await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId] });
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId, 'allocations'] });
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId, 'units'] });
       }
 
       toast({
@@ -101,6 +106,11 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
       if (!id) return;
       await queryClient.invalidateQueries({ queryKey: ['rent', id] });
       await queryClient.invalidateQueries({ queryKey: ['rents'] });
+      if (rentalQuery.data?.productId) {
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId] });
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId, 'allocations'] });
+        await queryClient.invalidateQueries({ queryKey: ['productInventory', rentalQuery.data.productId, 'units'] });
+      }
 
       toast({
         title: 'Alquiler actualizado',
@@ -111,6 +121,32 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
       toast({
         title: 'Error',
         description: 'No se pudo actualizar el alquiler',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const depositResolutionMutation = useMutation({
+    mutationFn: async (depositReturned: Money) => {
+      if (!id) return;
+      await rentalService.updateRent(id, {
+        depositReturned,
+      });
+    },
+    onSuccess: async () => {
+      if (!id) return;
+      await queryClient.invalidateQueries({ queryKey: ['rent', id] });
+      await queryClient.invalidateQueries({ queryKey: ['rents'] });
+
+      toast({
+        title: 'Fianza actualizada',
+        description: 'Se ha registrado la resolución de la fianza.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar la fianza',
         variant: 'destructive',
       });
     },
@@ -155,6 +191,12 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
   const nextTransitions = rentalQuery.data
     ? RentalStateMachineService.getNextTransitions(rentalQuery.data, viewerRole)
     : [];
+  const canResolveDeposit = Boolean(
+    rentalQuery.data &&
+      rentalQuery.data.status === 'rental_completed' &&
+      rentalQuery.data.deposit.amount > 0 &&
+      (viewerRole === 'owner' || viewerRole === 'admin')
+  );
 
   const calculateDurationDays = (): number => {
     if (!rentalQuery.data) return 0;
@@ -177,7 +219,9 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
     error: rentalQuery.error ? 'Error al cargar la información del alquiler' : null,
     isUpdatingStatus: statusMutation.isPending,
     isUpdatingRental: updateRentalMutation.isPending,
+    isResolvingDeposit: depositResolutionMutation.isPending,
     canEditRental,
+    canResolveDeposit,
     viewerRole,
     nextTransitions,
     handleStatusChange: async (input) => {
@@ -185,6 +229,9 @@ export const useRentalDetails = (id: string | undefined): UseRentalDetailsReturn
     },
     handleRentalUpdate: async (data) => {
       await updateRentalMutation.mutateAsync(data);
+    },
+    handleDepositResolution: async (depositReturned) => {
+      await depositResolutionMutation.mutateAsync(depositReturned);
     },
     calculateDurationDays,
     formatDate,

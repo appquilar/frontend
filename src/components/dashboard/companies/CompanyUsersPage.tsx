@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,6 +15,7 @@ import {
     useUpdateCompanyUserRole,
 } from "@/application/hooks/useCompanyMembership";
 import type { CompanyUserRole } from "@/domain/models/CompanyMembership";
+import type { GenericCapabilityLimits } from "@/domain/models/Subscription";
 import { UserRole } from "@/domain/models/UserRole";
 import {
     getUserCompanyId,
@@ -23,6 +24,15 @@ import {
     isCompanyOwnerUser,
 } from "@/domain/models/User";
 import AccessRestricted from "@/components/dashboard/user-management/AccessRestricted";
+import { getKnownBackendErrorMessage } from "@/utils/backendErrorMessages";
+
+const getNumericLimit = (
+    limits: GenericCapabilityLimits | null | undefined,
+    key: string
+): number | null => {
+    const value = limits?.[key];
+    return typeof value === "number" ? value : null;
+};
 
 const CompanyUsersPage = () => {
     const { companyId: routeCompanyId } = useParams();
@@ -40,10 +50,24 @@ const CompanyUsersPage = () => {
     const inviteMutation = useInviteCompanyUser();
     const removeMutation = useRemoveCompanyUser();
     const updateRoleMutation = useUpdateCompanyUserRole();
+    const companyContext = currentUser?.companyContext ?? null;
 
     const companyName = useMemo(() => {
         return getUserCompanyName(currentUser) ?? "Empresa";
     }, [currentUser]);
+
+    const teamMemberLimit =
+        companyContext?.entitlements?.quotas.teamMembers
+        ?? getNumericLimit(companyContext?.entitlements?.capabilities?.teamManagement?.limits, "teamMembers")
+        ?? getNumericLimit(companyContext?.capabilities?.teamManagement?.limits, "teamMembers");
+
+    const countedTeamMembers = (usersQuery.data ?? []).filter(
+        (user) => user.status !== "SUSPENDED"
+    ).length;
+    const isTeamLimitReached =
+        typeof teamMemberLimit === "number" && countedTeamMembers >= teamMemberLimit;
+    const teamLimitMessage =
+        "Tu plan Starter incluye solo el propietario. Sube a Pro para invitar equipo.";
 
     if (!effectiveCompanyId) {
         return (
@@ -80,7 +104,7 @@ const CompanyUsersPage = () => {
             setInviteDialogOpen(false);
         } catch (error) {
             console.error("Error inviting company user", error);
-            toast.error("No se pudo enviar la invitación.");
+            toast.error(getKnownBackendErrorMessage(error, "No se pudo enviar la invitación."));
         }
     };
 
@@ -123,12 +147,21 @@ const CompanyUsersPage = () => {
                 <Button
                     onClick={() => setInviteDialogOpen(true)}
                     className="gap-2"
-                    disabled={inviteMutation.isPending}
+                    disabled={inviteMutation.isPending || isTeamLimitReached}
                 >
                     <Mail size={16} />
                     Invitar usuario
                 </Button>
             </div>
+
+            {isTeamLimitReached && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <p className="font-medium">{teamLimitMessage}</p>
+                    <Button asChild size="sm" variant="outline" className="mt-3 bg-white">
+                        <Link to="/dashboard/upgrade">Ver planes</Link>
+                    </Button>
+                </div>
+            )}
 
             {usersQuery.isLoading && (
                 <div className="flex justify-center py-8">
@@ -153,10 +186,10 @@ const CompanyUsersPage = () => {
             )}
 
             <InviteUserDialog
-                open={inviteDialogOpen}
+                open={inviteDialogOpen && !isTeamLimitReached}
                 onOpenChange={setInviteDialogOpen}
                 onSubmit={handleInviteUser}
-                disabled={inviteMutation.isPending}
+                disabled={inviteMutation.isPending || isTeamLimitReached}
             />
         </div>
     );

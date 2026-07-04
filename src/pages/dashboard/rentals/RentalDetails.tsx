@@ -7,6 +7,7 @@ import RentalEditableCard from '@/components/dashboard/rentals/details/RentalEdi
 import RentalStateWizard from '@/components/dashboard/rentals/details/RentalStateWizard';
 import RentalInventoryStatusCard from '@/components/dashboard/rentals/details/RentalInventoryStatusCard';
 import RentalMessagesCard from '@/components/dashboard/rentals/details/RentalMessagesCard';
+import RentalDepositResolutionCard from '@/components/dashboard/rentals/details/RentalDepositResolutionCard';
 import LoadingSpinner from '@/components/dashboard/rentals/details/LoadingSpinner';
 import ErrorDisplay from '@/components/dashboard/rentals/details/ErrorDisplay';
 import { useEffect } from 'react';
@@ -19,11 +20,14 @@ const RentalDetails = () => {
     error, 
     isUpdatingStatus,
     isUpdatingRental,
+    isResolvingDeposit,
     canEditRental,
+    canResolveDeposit,
     viewerRole,
     nextTransitions,
     handleStatusChange,
     handleRentalUpdate,
+    handleDepositResolution,
     calculateDurationDays,
     formatDate
   } = useRentalDetails(id);
@@ -80,12 +84,22 @@ const RentalDetails = () => {
             />
           </div>
 
-          <div className="order-3">
+          {canResolveDeposit && (
+            <div className="order-3">
+              <RentalDepositResolutionCard
+                rental={rental}
+                isSaving={isResolvingDeposit}
+                onResolve={handleDepositResolution}
+              />
+            </div>
+          )}
+
+          <div className="order-4">
             <RentalInventoryStatusCard rental={rental} viewerRole={viewerRole} />
           </div>
 
           {canEditRental && (
-            <div className="order-4">
+            <div className="order-5">
               <RentalEditableCard
                 rental={rental}
                 viewerRole={viewerRole}
@@ -95,7 +109,7 @@ const RentalDetails = () => {
             </div>
           )}
 
-          <div className={canEditRental ? 'order-5' : 'order-4'}>
+          <div className={canEditRental ? 'order-6' : 'order-5'}>
             <CustomerInfoCard rental={rental} />
           </div>
         </div>

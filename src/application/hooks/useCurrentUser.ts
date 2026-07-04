@@ -17,10 +17,10 @@ export function useCurrentUser() {
     });
 
     return {
-        user: query.data ?? null,
+        user: isAuthenticated ? query.data ?? null : null,
         isAuthenticated: isAuthenticated && Boolean(query.data),
-        isLoading: query.isLoading,
-        error: query.error,
+        isLoading: isAuthenticated && query.isLoading,
+        error: isAuthenticated ? query.error : null,
         refetch: query.refetch,
     };
 }

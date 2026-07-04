@@ -12,6 +12,7 @@ import FormHeader from '@/components/dashboard/common/FormHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProductOwnerAddress } from '@/application/hooks/useProductOwnerAddress';
 import { buildProductPath } from '@/domain/config/publicRoutes';
+import { useProductPublicationLimit } from '@/components/dashboard/products/hooks/useProductPublicationLimit';
 
 const createDraftProduct = (): Product => ({
     id: Uuid.generate().toString(),
@@ -51,7 +52,14 @@ const ProductFormPage = () => {
         settingsHref,
     } = useProductOwnerAddress();
     const inventoryOwnerType: 'company' | 'user' = ownerType;
-    const canCreateProduct = !isProductOwnerAddressLoading && hasRequiredAddress;
+    const {
+        hasReachedProductPublicationLimit,
+        publicationLimitCtaLabel,
+        handlePublicationLimitCta,
+        isProcessingPublicationLimitCta,
+        isPublicationLimitLoading,
+    } = useProductPublicationLimit();
+    const canSubmitProduct = !isProductOwnerAddressLoading;
     const productQuery = useProduct(isAddMode ? undefined : productId);
     const product: Product | null = isAddMode
         ? createDraftProduct()
@@ -74,11 +82,11 @@ const ProductFormPage = () => {
 
     const handleSaveProduct = async (updatedProduct: Partial<Product>) => {
         try {
-            if (isAddMode && !canCreateProduct) {
+            if (updatedProduct.publicationStatus === 'published' && !hasRequiredAddress) {
                 toast.error(
                     ownerType === "company"
-                        ? "Debes añadir la dirección de la empresa antes de crear productos."
-                        : "Debes añadir una dirección en tu perfil antes de crear productos."
+                        ? "Debes añadir la dirección de la empresa antes de publicar productos."
+                        : "Debes añadir una dirección en tu perfil antes de publicar productos."
                 );
                 return;
             }
@@ -144,6 +152,45 @@ const ProductFormPage = () => {
         toast.error("Error al cargar el producto");
     }
 
+    if (isAddMode && isPublicationLimitLoading) {
+        return (
+            <div className="flex justify-center py-10">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (isAddMode && hasReachedProductPublicationLimit) {
+        return (
+            <div className="space-y-6">
+                <FormHeader
+                    title="Añadir Nuevo Producto"
+                    backUrl="/dashboard/products"
+                />
+                <Alert variant="warning" className="mb-6">
+                    <AlertTitle>Límite de productos alcanzado</AlertTitle>
+                    <AlertDescription>
+                        Has alcanzado el límite de productos publicados de tu plan. Libera un producto publicado o mejora tu plan antes de crear otro.
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                            {publicationLimitCtaLabel && (
+                                <Button
+                                    type="button"
+                                    onClick={handlePublicationLimitCta}
+                                    disabled={isProcessingPublicationLimitCta}
+                                >
+                                    {isProcessingPublicationLimitCta ? "Redirigiendo..." : publicationLimitCtaLabel}
+                                </Button>
+                            )}
+                            <Button type="button" variant="outline" onClick={() => navigate('/dashboard/products')}>
+                                Volver a productos
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            </div>
+        );
+    }
+
     if (!product && !isAddMode) {
         return (
             <div className="space-y-6">
@@ -177,8 +224,8 @@ const ProductFormPage = () => {
                     </AlertTitle>
                     <AlertDescription>
                         {ownerType === "company"
-                            ? "Antes de crear un producto, debes completar la dirección de la empresa. "
-                            : "Antes de crear un producto, debes completar tu dirección en el perfil. "}
+                            ? "Puedes guardar un borrador, pero antes de publicar debes completar la dirección de la empresa. "
+                            : "Puedes guardar un borrador, pero antes de publicar debes completar tu dirección en el perfil. "}
                         <Link to={settingsHref} className="underline font-medium">
                             {ownerType === "company"
                                 ? "Ir a la empresa"
@@ -217,7 +264,7 @@ const ProductFormPage = () => {
                             product={product}
                             onSave={handleSaveProduct}
                             onCancel={handleCancel}
-                            disableSubmit={isAddMode && !canCreateProduct}
+                            disableSubmit={!canSubmitProduct}
                             inventoryOwnerType={inventoryOwnerType}
                             enableInventoryQuery={!isAddMode}
                         />

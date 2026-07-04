@@ -157,7 +157,7 @@ test("contact modal blocks submits when availability says the request cannot be 
   await page.locator("#rental-requested-quantity").fill("4");
   await expect(page.getByText("No hay stock suficiente para 4 unidades en esas fechas.")).toBeVisible();
 
-  await page.getByRole("button", { name: "Contactar con el proveedor" }).click();
+  await page.getByRole("button", { name: "Solicitar alquiler" }).click();
   const dialog = page.getByRole("dialog");
 
   await dialog.getByLabel("Mensaje").fill("Necesito confirmar si se puede ampliar el stock.");
@@ -235,7 +235,7 @@ test("contact modal recovers from rental-cost and send failures before succeedin
   await page.getByRole("button", { name: "Seleccionar fechas de alquiler" }).click();
   await selectAvailableRentalDates(page);
 
-  await page.getByRole("button", { name: "Contactar con el proveedor" }).click();
+  await page.getByRole("button", { name: "Solicitar alquiler" }).click();
   const dialog = page.getByRole("dialog");
 
   await dialog.getByRole("button", { name: "Calcular precio" }).click();

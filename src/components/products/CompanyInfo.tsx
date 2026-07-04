@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone } from 'lucide-react';
+import { CalendarCheck, MapPin } from 'lucide-react';
 import { ProductCompany } from './ProductCard';
 import { usePublicCompanyProfile } from '@/application/hooks/usePublicCompanyProfile';
 import { getPublicMediaUrl } from '@/application/hooks/usePublicMediaUrl';
@@ -85,8 +85,8 @@ const CompanyInfo = ({ company, locationLabel, onContact, isLoggedIn }: CompanyI
             className="mt-2 w-full gap-2"
             onClick={onContact}
           >
-            <Phone size={16} />
-            Contactar con el proveedor
+            <CalendarCheck size={16} />
+            Solicitar alquiler
           </Button>
         )}
       </div>

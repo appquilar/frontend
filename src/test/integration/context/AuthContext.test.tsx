@@ -11,12 +11,14 @@ const {
   mockInvalidateQueries,
   mockFetchQuery,
   mockSetQueryData,
+  mockClearQueryClient,
   mockCreateCompany,
   mockAuthService,
 } = vi.hoisted(() => ({
   mockInvalidateQueries: vi.fn(),
   mockFetchQuery: vi.fn(),
   mockSetQueryData: vi.fn(),
+  mockClearQueryClient: vi.fn(),
   mockCreateCompany: vi.fn(),
   mockAuthService: {
     getCurrentUser: vi.fn(),
@@ -44,6 +46,7 @@ vi.mock("@/composition/queryClient", () => ({
     invalidateQueries: mockInvalidateQueries,
     fetchQuery: mockFetchQuery,
     setQueryData: mockSetQueryData,
+    clear: mockClearQueryClient,
   },
 }));
 
@@ -81,6 +84,7 @@ describe("AuthContext", () => {
     mockInvalidateQueries.mockReset();
     mockFetchQuery.mockReset();
     mockSetQueryData.mockReset();
+    mockClearQueryClient.mockReset();
     mockCreateCompany.mockReset();
 
     mockAuthService.getCurrentUser.mockReset();
@@ -111,6 +115,9 @@ describe("AuthContext", () => {
     );
     mockSetQueryData.mockImplementation((queryKey, updater) => {
       activeQueryClient.setQueryData(queryKey, updater);
+    });
+    mockClearQueryClient.mockImplementation(() => {
+      activeQueryClient.clear();
     });
   });
 
@@ -190,7 +197,7 @@ describe("AuthContext", () => {
     });
   });
 
-  it("logs in and out, invalidating currentUser query", async () => {
+  it("logs in and out without clearing currentUser observers", async () => {
     const loggedInUser = {
       id: "user-1",
       firstName: "Victor",
@@ -217,7 +224,8 @@ describe("AuthContext", () => {
         email: "victor@appquilar.com",
         password: "secret",
       });
-      expect(screen.getByTestId("authenticated")).toHaveTextContent("true");
+      expect(mockClearQueryClient).not.toHaveBeenCalled();
+      expect(mockSetQueryData).toHaveBeenCalledWith(["currentUser"], loggedInUser);
     });
 
     await userEvent.click(screen.getByRole("button", { name: "logout" }));
@@ -225,6 +233,7 @@ describe("AuthContext", () => {
     await waitFor(() => {
       expect(mockAuthService.logout).toHaveBeenCalledTimes(1);
       expect(screen.getByTestId("authenticated")).toHaveTextContent("false");
+      expect(mockSetQueryData).toHaveBeenCalledWith(["currentUser"], null);
       expect(mockInvalidateQueries).toHaveBeenCalled();
     });
   });

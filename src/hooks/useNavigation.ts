@@ -16,8 +16,6 @@ import {
 } from "lucide-react";
 import type { NavigationIconKey, NavSection } from "@/domain/services/navigation/types";
 import { useAuth } from "@/context/AuthContext";
-import { useOwnedProductsCount } from "@/application/hooks/useProducts";
-import { useOwnerRentalsCount } from "@/application/hooks/useRentals";
 import { buildDashboardNavigationSections } from "@/domain/services/navigation/NavigationConfig";
 import {
     getUserCompanyId,
@@ -46,27 +44,15 @@ export const useNavigation = () => {
     const location = useLocation();
     const { currentUser } = useAuth();
     const companyId = getUserCompanyId(currentUser);
-    const ownerId = companyId || currentUser?.id;
-    const ownerType = companyId ? "company" : "user";
-    const ownedPublishedProductsCountQuery = useOwnedProductsCount({
-        ownerId,
-        ownerType,
-        filters: {
-            publicationStatus: "published",
-        },
-    });
-    const ownerRentalsCountQuery = useOwnerRentalsCount({ ownerId });
 
     const isAdmin = isPlatformAdminUser(currentUser);
     const isRegularAccount = isRegularUser(currentUser);
     const isCompanyMember = hasCompanyMembership(currentUser);
     const isCompanyOwner = isCompanyOwnerUser(currentUser);
     const isCompanyAdmin = isCompanyAdminUser(currentUser);
-    const hasPublishedProductsToRent = (ownedPublishedProductsCountQuery.data ?? 0) > 0;
-    const hasRentalsAsOwner = (ownerRentalsCountQuery.data ?? 0) > 0;
-    const shouldShowRentalsItem = hasPublishedProductsToRent || hasRentalsAsOwner;
-    const showCompanyManagement = !isAdmin && isCompanyMember && Boolean(companyId);
-    const canManageCompanyUsers = showCompanyManagement && (isCompanyOwner || isCompanyAdmin);
+    const shouldShowRentalsItem = Boolean(currentUser) && !isAdmin;
+    const showCompanyManagement = !isAdmin && isCompanyMember && Boolean(companyId) && (isCompanyOwner || isCompanyAdmin);
+    const canManageCompanyUsers = showCompanyManagement;
 
     const canUpgradeToCompany = isRegularAccount && !isAdmin && !isCompanyMember;
 

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
     Dialog,
     DialogClose,
@@ -13,6 +15,7 @@ import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import AppLogo from "@/components/common/AppLogo";
+import { authModalReturnToStorageKey } from "@/hooks/useAuthModalLauncher";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -20,6 +23,8 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<"signin" | "signup" | "forgot">(
         "signin",
     );
@@ -62,6 +67,38 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             setInfoMessage(null);
         }
     }, [isOpen]);
+
+    const resolveReturnTo = (returnTo: string | null) => {
+        if (!returnTo?.startsWith("/")) {
+            return null;
+        }
+
+        if (
+            activeTab === "signup" &&
+            (/^\/dashboard\/(?:products|rentals)\/[^/?]+/.test(returnTo) ||
+                returnTo.startsWith("/dashboard/messages"))
+        ) {
+            return "/dashboard";
+        }
+
+        return returnTo;
+    };
+
+    const handleAuthSuccess = async () => {
+        const returnTo = sessionStorage.getItem(authModalReturnToStorageKey);
+        sessionStorage.removeItem(authModalReturnToStorageKey);
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["product"] }),
+            queryClient.invalidateQueries({ queryKey: ["products"] }),
+        ]);
+        await queryClient.refetchQueries({ queryKey: ["product"], type: "active" });
+        onClose();
+
+        const target = resolveReturnTo(returnTo);
+        if (target) {
+            navigate(target);
+        }
+    };
 
     const isSignInFlowActive = activeTab === "signin" || activeTab === "forgot";
 
@@ -138,7 +175,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                     <div className="px-5 pb-5 pt-4">
                         {activeTab === "signin" && (
                             <SignInForm
-                                onSuccess={onClose}
+                                onSuccess={handleAuthSuccess}
                                 onForgotPassword={() => setActiveTab("forgot")}
                                 infoMessage={infoMessage}
                             />
@@ -146,13 +183,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
                         {activeTab === "signup" && (
                             <SignUpForm
-                                onSuccess={() => {
-                                    // Volvemos a login y mostramos mensaje
-                                    setActiveTab("signin");
-                                    setInfoMessage(
-                                        "Tu cuenta se ha creado correctamente. Ahora puedes iniciar sesión con tu correo y contraseña.",
-                                    );
-                                }}
+                                onSuccess={handleAuthSuccess}
                             />
                         )}
 

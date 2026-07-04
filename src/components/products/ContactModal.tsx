@@ -190,9 +190,9 @@ const ContactModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-[500px]">
         <DialogHeader className="shrink-0">
-          <DialogTitle>Contactar para alquilar</DialogTitle>
+          <DialogTitle>Solicitar alquiler</DialogTitle>
           <DialogDescription>
-            Envía un mensaje a {ownerName} sobre "{productName}". Esto creará un lead en tu panel.
+            Envía tu solicitud a {ownerName} para "{productName}". El proveedor revisará disponibilidad y responderá con una propuesta.
           </DialogDescription>
         </DialogHeader>
 

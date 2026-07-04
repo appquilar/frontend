@@ -72,26 +72,31 @@ const PublicCompanyLocationMap = ({
           </p>
         </div>
 
-        <Button asChild variant="outline" className="shrink-0">
-          <a href={searchUrl} target="_blank" rel="noreferrer">
-            Abrir en Google Maps
-          </a>
-        </Button>
+        {!mapsError && (
+          <Button asChild variant="outline" className="shrink-0">
+            <a href={searchUrl} target="_blank" rel="noreferrer">
+              Abrir en Google Maps
+            </a>
+          </Button>
+        )}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border/50 bg-muted/40">
-        {mapsError ? (
-          <div className="flex h-72 items-center justify-center px-6 text-center text-sm text-muted-foreground">
-            {mapsError}
-          </div>
-        ) : (
+      {mapsError ? (
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p>{mapsError}</p>
+          <a href={searchUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-medium underline">
+            Abrir en Google Maps
+          </a>
+        </div>
+      ) : (
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border/50 bg-muted/40">
           <div
             ref={mapContainerRef}
             aria-label={isApproximate ? "Mapa de ubicación aproximada" : "Mapa de ubicación"}
             className="h-72 w-full"
           />
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 };

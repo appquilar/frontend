@@ -2,6 +2,7 @@ import type {ReactNode} from "react";
 import {Link, Navigate, useLocation} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext";
 import {Loader2} from "lucide-react";
+import { authModalReturnToStorageKey } from "@/hooks/useAuthModalLauncher";
 
 interface ProtectedRouteProps {
     children: ReactNode;
@@ -53,6 +54,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     // Si no hay usuario, no hay sesión válida -> redirigimos fuera del dashboard.
     if (!currentUser) {
+        sessionStorage.setItem("auth:initialTab", "signin");
+        sessionStorage.setItem("auth:infoMessage", "Inicia sesión para continuar.");
+        sessionStorage.setItem(authModalReturnToStorageKey, location.pathname + location.search);
+
         return (
             <Navigate
                 to="/"

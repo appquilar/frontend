@@ -182,6 +182,58 @@ describe("application rental hooks coverage", () => {
         });
     });
 
+    it("resolves a completed rental deposit with a dedicated patch payload", async () => {
+        useCurrentUserMock.mockReturnValue({
+            user: {
+                id: "user-1",
+                companyId: "company-1",
+                roles: [],
+            },
+        });
+        rentalServiceMock.getRentById.mockResolvedValue(buildRental({
+            status: "rental_completed",
+            deposit: { amount: 1000, currency: "EUR" },
+            depositReturned: null,
+        }));
+        rentalServiceMock.updateRent.mockResolvedValue(undefined);
+
+        const wrapperData = createWrapper();
+        const { result } = renderHook(() => useRentalDetails("rent-1"), {
+            wrapper: wrapperData.wrapper,
+        });
+
+        await waitFor(() => {
+            expect(result.current.rental?.status).toBe("rental_completed");
+        });
+
+        expect(result.current.canEditRental).toBe(false);
+        expect(result.current.canResolveDeposit).toBe(true);
+
+        await act(async () => {
+            await result.current.handleDepositResolution({
+                amount: 500,
+                currency: "EUR",
+            });
+        });
+
+        expect(rentalServiceMock.updateRent).toHaveBeenCalledWith("rent-1", {
+            depositReturned: {
+                amount: 500,
+                currency: "EUR",
+            },
+        });
+        expect(wrapperData.invalidateQueriesSpy).toHaveBeenCalledWith({
+            queryKey: ["rent", "rent-1"],
+        });
+        expect(wrapperData.invalidateQueriesSpy).toHaveBeenCalledWith({
+            queryKey: ["rents"],
+        });
+        expect(toastMock).toHaveBeenCalledWith({
+            title: "Fianza actualizada",
+            description: "Se ha registrado la resolución de la fianza.",
+        });
+    });
+
     it("builds rent conversations for owner and renter roles, preserving unread counters and message ordering", async () => {
         useCurrentUserMock.mockReturnValue({
             user: {

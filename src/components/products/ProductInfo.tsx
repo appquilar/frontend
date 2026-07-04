@@ -78,6 +78,9 @@ const ProductInfo = ({
     onLeadCalculationChange,
 }: ProductInfoProps) => {
     const { openSignIn, openSignUp } = useAuthModalLauncher();
+    const productReturnTo = typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : undefined;
     const rentability = useProductRentability({
         id: product.id,
         internalId: product.inventorySummary?.productInternalId ?? "",
@@ -102,7 +105,8 @@ const ProductInfo = ({
     const handleContact = () => {
         if (!isLoggedIn) {
             openSignUp(
-                "Crea tu cuenta para contactar con el propietario.",
+                "Crea tu cuenta para solicitar el alquiler.",
+                productReturnTo,
             );
             return;
         }
@@ -120,6 +124,8 @@ const ProductInfo = ({
     const pricingDescription = visibleDailyPricing.isFromLaterTier && visibleDailyPricing.daysFrom
         ? `Disponible a partir de ${visibleDailyPricing.daysFrom} días`
         : "Precio del primer tier disponible";
+    const paymentPolicyCopy =
+        "Appquilar coordina la solicitud. El pago del alquiler y la fianza se acuerdan y gestionan directamente entre proveedor y cliente fuera de la plataforma.";
     return (
         <div className="space-y-8">
             {product.publicationStatus && product.publicationStatus !== 'published' && (
@@ -243,17 +249,24 @@ const ProductInfo = ({
                                 </div>
                             )}
                         </div>
+                        <div className="mt-3 flex gap-2 rounded-lg border border-border bg-muted/20 p-3 text-sm leading-6 text-muted-foreground">
+                            <Info size={16} className="mt-0.5 shrink-0 text-primary" />
+                            <p>{paymentPolicyCopy}</p>
+                        </div>
                     </>
                 ) : (
                     <div className="rounded-lg bg-secondary p-4 sm:p-5">
                         <p className="max-w-xl text-[15px] leading-6 text-foreground">
                             Crea tu cuenta para ver tarifas, calcular el alquiler y contactar con el proveedor.
                         </p>
+                        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                            {paymentPolicyCopy}
+                        </p>
                         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                             <Button
                                 type="button"
                                 className="h-10 px-4 text-sm sm:flex-1"
-                                onClick={() => openSignUp()}
+                                onClick={() => openSignUp(undefined, productReturnTo)}
                             >
                                 Crear cuenta gratis
                             </Button>
@@ -261,7 +274,7 @@ const ProductInfo = ({
                                 type="button"
                                 variant="outline"
                                 className="h-10 border-border/80 bg-background text-sm sm:flex-1"
-                                onClick={() => openSignIn()}
+                                onClick={() => openSignIn(undefined, productReturnTo)}
                             >
                                 Ya tengo cuenta
                             </Button>

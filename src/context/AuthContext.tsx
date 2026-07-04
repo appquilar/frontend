@@ -99,6 +99,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         queryClient.setQueryData(["currentUser"], user);
     };
 
+    const resetQueryCacheForIdentity = async (user: User | null) => {
+        setCurrentUserQueryData(user);
+        await queryClient.invalidateQueries({
+            predicate: (query) => query.queryKey[0] !== "currentUser",
+        });
+    };
+
     //
     // Refrescar /me manualmente
     //
@@ -125,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const credentials: LoginCredentials = { email, password };
 
             const user = await authService.login(credentials);
-            setCurrentUserQueryData(user);
+            await resetQueryCacheForIdentity(user);
             await queryClient.invalidateQueries({ queryKey: ["product"] });
             await queryClient.invalidateQueries({ queryKey: ["products"] });
             await queryClient.invalidateQueries({ queryKey: ["category", "public"] });
@@ -136,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     //
-    // SIGNUP (no autologin)
+    // SIGNUP + autologin
     //
     const register = async (
         firstName: string,
@@ -154,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
 
         await authService.register(data);
-        // No autologin → el AuthModal cambiará a "login"
+        await login(email, password);
     };
 
     //
@@ -198,9 +205,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await authService.logout();
         setAuthBlockMessage(null);
 
-        queryClient.setQueryData(["currentUser"], null);
-        await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        await queryClient.invalidateQueries();
+        await resetQueryCacheForIdentity(null);
     };
 
     const upgradeToCompany = async (

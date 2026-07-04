@@ -14,6 +14,7 @@ import {UserRole} from "@/domain/models/UserRole";
 import { useSidebar } from "@/components/ui/sidebar";
 import { getEffectiveUserPlan } from "@/domain/models/Subscription";
 import { useProductOwnerAddress } from "@/application/hooks/useProductOwnerAddress";
+import { useOwnerProductSummary } from "@/application/hooks/useProducts";
 
 /**
  * Contenido principal de la navegación del panel de control
@@ -38,6 +39,17 @@ const DashboardNavigationContent = ({
     const isAdmin = hasRole(UserRole.ADMIN);
     const isRegularUser = hasRole(UserRole.REGULAR_USER);
     const hasCompany = Boolean(currentUser?.companyContext?.companyId ?? currentUser?.companyId);
+    const ownerProductSummaryQuery = useOwnerProductSummary({
+        ownerId: !hasCompany && !isAdmin ? currentUser?.id ?? null : null,
+        ownerType: "user",
+        enabled: Boolean(currentUser?.id && !hasCompany && !isAdmin),
+    });
+    const hasOwnerProducts = (ownerProductSummaryQuery.data?.total ?? 0) > 0;
+    const shouldShowProviderPrompts =
+        hasCompany ||
+        isAdmin ||
+        ownerProductSummaryQuery.isLoading ||
+        hasOwnerProducts;
     const effectiveUserPlan = getEffectiveUserPlan(
         currentUser?.planType,
         currentUser?.subscriptionStatus
@@ -87,7 +99,7 @@ const DashboardNavigationContent = ({
             </nav>
 
             {/* Alerta de dirección vacía */}
-            {!isProductOwnerAddressLoading && !hasRequiredAddress && (
+            {shouldShowProviderPrompts && !isProductOwnerAddressLoading && !hasRequiredAddress && (
                 <div className="px-2 mb-2">
                     <Alert
                         className="cursor-pointer rounded-2xl border border-slate-200/80 bg-white/80 hover:bg-white transition-colors shadow-sm"
@@ -108,7 +120,7 @@ const DashboardNavigationContent = ({
                 </div>
             )}
 
-            {canUpgradeToUserPro && (
+            {shouldShowProviderPrompts && canUpgradeToUserPro && (
                 <div className="px-2 mb-2">
                     <UpgradeToProLink
                         onAfterNavigate={() => {
@@ -121,7 +133,7 @@ const DashboardNavigationContent = ({
             )}
 
             {/* Enlace para actualizar a cuenta de empresa (justo antes del perfil) */}
-            {canUpgradeToCompany && (
+            {shouldShowProviderPrompts && canUpgradeToCompany && (
                 <div className="px-2 mb-2">
                     <UpgradeLink
                         onAfterNavigate={() => {

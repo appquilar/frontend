@@ -104,15 +104,19 @@ describe("ProductInfo behavior", () => {
 
     renderWithProviders(<ProductInfo {...baseProps} isLoggedIn={false} />);
 
+    expect(screen.getByText(/El pago del alquiler y la fianza/)).toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: "Crear cuenta gratis" }));
     await user.click(screen.getByRole("button", { name: "Ya tengo cuenta" }));
     await user.click(screen.getByRole("button", { name: "Contactar como invitado" }));
 
-    expect(openSignUpMock).toHaveBeenNthCalledWith(1);
+    expect(openSignUpMock).toHaveBeenNthCalledWith(1, undefined, "/");
     expect(openSignInMock).toHaveBeenCalledTimes(1);
+    expect(openSignInMock).toHaveBeenCalledWith(undefined, "/");
     expect(openSignUpMock).toHaveBeenNthCalledWith(
       2,
-      "Crea tu cuenta para contactar con el propietario."
+      "Crea tu cuenta para solicitar el alquiler.",
+      "/"
     );
     expect(baseProps.onContact).not.toHaveBeenCalled();
   });
@@ -125,6 +129,7 @@ describe("ProductInfo behavior", () => {
     expect(screen.getByTestId("rental-calculator")).toBeInTheDocument();
     expect(screen.getByText("80.00€")).toBeInTheDocument();
     expect(screen.getByText("Madrid, Comunidad de Madrid")).toBeInTheDocument();
+    expect(screen.getByText(/El pago del alquiler y la fianza/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Contactar empresa" }));
 

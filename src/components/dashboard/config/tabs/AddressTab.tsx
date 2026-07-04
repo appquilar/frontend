@@ -37,6 +37,17 @@ const AddressTab: React.FC<AddressTabProps> = ({
 
     const latitude = addressForm.watch("latitude");
     const longitude = addressForm.watch("longitude");
+    const street = addressForm.watch("street");
+    const city = addressForm.watch("city");
+    const state = addressForm.watch("state");
+    const country = addressForm.watch("country");
+    const postalCode = addressForm.watch("postalCode");
+    const mapsSearchQuery = typeof latitude === "number" && typeof longitude === "number"
+        ? `${latitude},${longitude}`
+        : [street, postalCode, city, state, country].filter(Boolean).join(", ");
+    const mapsSearchUrl = mapsSearchQuery
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsSearchQuery)}`
+        : null;
 
     return (
         <Card>
@@ -191,11 +202,30 @@ const AddressTab: React.FC<AddressTabProps> = ({
                                 Nunca mostraremos tu dirección exacta a otros usuarios, sólo una
                                 ubicación aproximada cercana a tu posición real.
                             </p>
+                            {isMapsLoading && !mapsError && (
+                                <p className="text-xs text-muted-foreground">Cargando mapa...</p>
+                            )}
 
-                            <div
-                                ref={mapContainerRef}
-                                className="w-full h-[320px] rounded-md border overflow-hidden"
-                            />
+                            {mapsError ? (
+                                <div className="rounded-md border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
+                                    <p>El mapa no está disponible ahora. Puedes guardar la dirección manualmente.</p>
+                                    {mapsSearchUrl && (
+                                        <a
+                                            href={mapsSearchUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="mt-2 inline-flex font-medium underline"
+                                        >
+                                            Abrir en Google Maps
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                <div
+                                    ref={mapContainerRef}
+                                    className="w-full h-[320px] rounded-md border overflow-hidden"
+                                />
+                            )}
 
                             {typeof latitude === "number" &&
                                 typeof longitude === "number" && (
@@ -208,7 +238,7 @@ const AddressTab: React.FC<AddressTabProps> = ({
                         <CardFooter className="!px-0 !pb-0 !pt-4 border-t mt-4">
                             <Button
                                 type="submit"
-                                disabled={addressForm.formState.isSubmitting || isMapsLoading}
+                                disabled={addressForm.formState.isSubmitting}
                             >
                                 {addressForm.formState.isSubmitting
                                     ? "Guardando…"

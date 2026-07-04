@@ -18,7 +18,7 @@ NETWORK_NAME = appquilar
 STRIPE = stripe
 STRIPE_EXPECTED_ACCOUNT_ID ?= acct_1T1MQ2COjGpVsE06
 STRIPE_FORWARD_TO ?= https://dev.api.appquilar.com/api/billing/webhook/stripe
-STRIPE_EVENTS ?= checkout.session.completed,checkout.session.async_payment_succeeded,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
+STRIPE_EVENTS ?= checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.expired,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed,customer.subscription.trial_will_end,invoice.paid,invoice.payment_action_required,invoice.payment_failed
 
 # Help
 help:

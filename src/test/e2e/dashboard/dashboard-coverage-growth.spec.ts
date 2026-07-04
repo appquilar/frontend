@@ -490,8 +490,8 @@ test.describe("Dashboard Coverage Growth", () => {
     await expect(page.getByText("No hay resultados para")).toBeVisible();
 
     await page.goto("/product/taladro-percutor-18v");
-    await page.getByRole("button", { name: "Contactar con el proveedor" }).click();
-    await expect(page.getByRole("heading", { name: "Contactar para alquilar" })).toBeVisible();
+    await page.getByRole("button", { name: "Solicitar alquiler" }).click();
+    await expect(page.getByRole("heading", { name: "Solicitar alquiler" })).toBeVisible();
 
     await page.getByRole("button", { name: "Calcular precio" }).click();
     await page.getByLabel("Mensaje").fill("corto");

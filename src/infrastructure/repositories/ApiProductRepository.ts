@@ -532,7 +532,7 @@ export class ApiProductRepository implements ProductRepository {
             description: apiData.description || '',
             quantity: Number(apiData.quantity ?? apiData.inventory_summary?.total_quantity ?? 1),
             isRentalEnabled: Boolean(apiData.is_rental_enabled ?? apiData.inventory_summary?.is_rental_enabled ?? true),
-            isInventoryEnabled: Boolean(apiData.is_inventory_enabled ?? apiData.inventory_summary?.is_inventory_enabled ?? true),
+            isInventoryEnabled: Boolean(apiData.is_inventory_enabled ?? apiData.inventory_summary?.is_inventory_enabled ?? false),
             inventoryMode: this.resolveInventoryMode(apiData),
             bookingPolicy: apiData.booking_policy ?? 'owner_managed',
             allowsQuantityRequest: Boolean(apiData.allows_quantity_request ?? true),
@@ -544,17 +544,7 @@ export class ApiProductRepository implements ProductRepository {
             publicationStatus: status,
             dynamicProperties: this.mapDynamicProperties(apiData.dynamic_properties),
 
-            price: {
-                daily: Array.isArray(apiData.tiers) && apiData.tiers.length > 0
-                    ? (apiData.tiers[0]?.price_per_day?.amount || 0) / 100
-                    : 0,
-                deposit: (apiData.deposit?.amount || 0) / 100,
-                tiers: Array.isArray(apiData.tiers) ? apiData.tiers.map((t: any) => ({
-                    daysFrom: t.days_from,
-                    daysTo: t.days_to,
-                    pricePerDay: (t.price_per_day?.amount || 0) / 100
-                })) : []
-            },
+            price: this.mapPrice(apiData),
             productType: 'rental',
             category: {
                 id: apiData.category_id || primaryCategory?.id || '',
@@ -599,6 +589,43 @@ export class ApiProductRepository implements ProductRepository {
                         : undefined,
                 }: undefined
         };
+    }
+
+    private mapPrice(apiData: any): Product["price"] {
+        const pricePayload = apiData.price && typeof apiData.price === "object" ? apiData.price : {};
+        const rawTiers = Array.isArray(apiData.tiers)
+            ? apiData.tiers
+            : (Array.isArray(pricePayload.tiers) ? pricePayload.tiers : []);
+
+        const tiers = rawTiers.map((tier: any) => ({
+            daysFrom: Number(tier.days_from ?? tier.daysFrom ?? 1),
+            daysTo: tier.days_to ?? tier.daysTo,
+            pricePerDay: this.moneyLikeToEuros(tier.price_per_day ?? tier.pricePerDay),
+        }));
+
+        return {
+            daily: tiers.find((tier) => tier.pricePerDay > 0)?.pricePerDay
+                ?? this.moneyLikeToEuros(pricePayload.daily ?? apiData.daily ?? apiData.price_per_day),
+            deposit: this.moneyLikeToEuros(apiData.deposit ?? pricePayload.deposit),
+            tiers,
+        };
+    }
+
+    private moneyLikeToEuros(value: any): number {
+        if (typeof value === "number" && Number.isFinite(value)) {
+            return value;
+        }
+
+        if (typeof value === "string" && value.trim() !== "") {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        if (value && typeof value === "object" && typeof value.amount === "number") {
+            return value.amount / 100;
+        }
+
+        return 0;
     }
 
     private mapToDto(data: ProductFormData, includeQuantity: boolean = true): any {
@@ -655,7 +682,7 @@ export class ApiProductRepository implements ProductRepository {
             reservedQuantity: Number(apiData.reserved_quantity ?? 0),
             availableQuantity: Number(apiData.available_quantity ?? 0),
             isRentalEnabled: Boolean(apiData.is_rental_enabled ?? true),
-            isInventoryEnabled: Boolean(apiData.is_inventory_enabled ?? true),
+            isInventoryEnabled: Boolean(apiData.is_inventory_enabled ?? false),
             capabilityState: apiData.capability_state ?? 'disabled',
             inventoryMode: this.resolveInventoryMode(apiData),
             isRentableNow: Boolean(apiData.is_rentable_now ?? false),

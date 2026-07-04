@@ -845,7 +845,16 @@ describe("ApiRepository coverage helpers", () => {
   it("serializes invitations and maps site payloads with defaults", async () => {
     const apiClient = createApiClientMock();
     apiClient.post.mockResolvedValue(undefined);
-    apiClient.get.mockResolvedValue({
+    apiClient.get.mockResolvedValueOnce({
+      data: {
+        email: "new@appquilar.test",
+        company_name: "Rentals QA",
+        role: "ROLE_CONTRIBUTOR",
+        status: "ACCEPTED",
+        expires_at: "2026-07-10T12:00:00+00:00",
+      },
+    });
+    apiClient.get.mockResolvedValueOnce({
       data: {
         site_id: "site-1",
         name: "Main",
@@ -867,6 +876,17 @@ describe("ApiRepository coverage helpers", () => {
       apiClient as never,
       () => createAuthSession({ token: "jwt-token" })
     );
+
+    await expect(invitationRepository.getInvitationStatus({
+      companyId: "company/1",
+      token: "invite/1",
+    })).resolves.toEqual({
+      email: "new@appquilar.test",
+      companyName: "Rentals QA",
+      role: "ROLE_CONTRIBUTOR",
+      status: "ACCEPTED",
+      expiresAt: "2026-07-10T12:00:00+00:00",
+    });
 
     await invitationRepository.acceptInvitation({
       companyId: "company/1",
@@ -891,6 +911,12 @@ describe("ApiRepository coverage helpers", () => {
       featuredCategoryIds: ["category-3"],
     });
 
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/companies/company%2F1/invitations/invite%2F1",
+      {
+        headers: { Authorization: "Bearer jwt-token" },
+      }
+    );
     expect(apiClient.get).toHaveBeenCalledWith("/api/sites/site%2F1", {
       headers: { Authorization: "Bearer jwt-token" },
     });

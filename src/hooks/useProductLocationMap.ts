@@ -1,6 +1,10 @@
 import { RefObject, useEffect, useRef } from "react";
 
-import { getGoogleMapsMapId, loadGoogleMaps } from "@/infrastructure/google/GoogleMapsLoader";
+import {
+    getGoogleMapsMapId,
+    loadGoogleMaps,
+    subscribeGoogleMapsAuthFailure,
+} from "@/infrastructure/google/GoogleMapsLoader";
 
 type ProductLocationPolygonPoint = {
     latitude: number;
@@ -62,6 +66,20 @@ export const useProductLocationMap = ({
         }
 
         let cancelled = false;
+
+        const reportMapError = (error: unknown) => {
+            clearOverlay(overlayRef.current);
+            overlayRef.current = null;
+            mapRef.current = null;
+            containerRef.current?.replaceChildren();
+            onError?.(resolveMapErrorMessage(error));
+        };
+
+        const unsubscribeAuthFailure = subscribeGoogleMapsAuthFailure((error) => {
+            if (!cancelled) {
+                reportMapError(error);
+            }
+        });
 
         const initMap = async () => {
             try {
@@ -152,7 +170,7 @@ export const useProductLocationMap = ({
                 overlayRef.current = marker;
             } catch (error) {
                 console.error("Error initializing Google Maps:", error);
-                onError?.(resolveMapErrorMessage(error));
+                reportMapError(error);
             }
         };
 
@@ -160,6 +178,7 @@ export const useProductLocationMap = ({
 
         return () => {
             cancelled = true;
+            unsubscribeAuthFailure();
             clearOverlay(overlayRef.current);
             overlayRef.current = null;
         };

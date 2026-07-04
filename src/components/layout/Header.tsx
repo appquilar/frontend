@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import AuthModal from "../auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useCurrentUser } from "@/application/hooks/useCurrentUser";
 import { useUnreadRentMessagesTotal } from "@/application/hooks/useRentalMessages";
 
 import AppLogo from "@/components/common/AppLogo";
 import { usePublicSiteCategories } from "@/application/hooks/usePublicSiteCategories";
 import { PUBLIC_PATHS, buildCategoryPath, buildSearchPath } from "@/domain/config/publicRoutes";
+import { authModalReturnToStorageKey } from "@/hooks/useAuthModalLauncher";
 
 import {
     Sheet,
@@ -41,8 +41,7 @@ const Header = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
-    const { user: currentUser, isAuthenticated } = useCurrentUser();
-    const { logout } = useAuth();
+    const { currentUser, isAuthenticated, logout } = useAuth();
     const { totalUnread: unreadMessagesTotal } = useUnreadRentMessagesTotal({
         enabled: isAuthenticated && Boolean(currentUser),
     });
@@ -58,10 +57,13 @@ const Header = () => {
             ? `${currentUser.firstName} ${currentUser.lastName ?? ""}`.trim()
             : currentUser?.email ?? "Usuario";
 
-    // Abrir login si venimos de reset password
+    // Abrir login si venimos de reset password o de una ruta protegida
     useEffect(() => {
         if (isAuthenticated) return;
-        const msg = sessionStorage.getItem("auth:postChangePasswordMessage");
+        const msg =
+            sessionStorage.getItem("auth:infoMessage") ??
+            sessionStorage.getItem("auth:postChangePasswordMessage") ??
+            sessionStorage.getItem("auth:initialTab");
         if (msg) setAuthModalOpen(true);
     }, [isAuthenticated]);
 
@@ -146,6 +148,7 @@ const Header = () => {
 
     const handleSellClick = () => {
         if (!isAuthenticated) {
+            sessionStorage.setItem(authModalReturnToStorageKey, "/dashboard/products/new");
             setAuthModalOpen(true);
             return;
         }

@@ -32,11 +32,13 @@ const ProductLocationMap = ({ city, state, coordinates = [-2.4637, 36.8381], pol
                 <MapPin size={18} className="text-primary" />
                 <span className="font-medium">{city + ', ' + state}</span>
             </div>
-            <div
-                ref={mapContainer}
-                className="w-full h-64 rounded-lg border border-border overflow-hidden bg-muted"
-                style={{ minHeight: '256px' }}
-            />
+            {!mapError && (
+                <div
+                    ref={mapContainer}
+                    className="w-full h-64 rounded-lg border border-border overflow-hidden bg-muted"
+                    style={{ minHeight: '256px' }}
+                />
+            )}
             {mapError && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                     <p>{mapError}</p>

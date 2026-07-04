@@ -147,10 +147,10 @@ test("logged-in users can calculate and send a contact request from the product 
   await page.getByRole("button", { name: "Calcular coste" }).click();
 
   await expect(page.getByText("225.00 EUR")).toBeVisible();
-  await page.getByRole("button", { name: "Contactar con el proveedor" }).click();
+  await page.getByRole("button", { name: "Solicitar alquiler" }).click();
 
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByText("Contactar para alquilar")).toBeVisible();
+  await expect(dialog.getByText("Solicitar alquiler")).toBeVisible();
   await expect(dialog.getByText(startLabel)).toBeVisible();
   await expect(dialog.getByText(endLabel)).toBeVisible();
 

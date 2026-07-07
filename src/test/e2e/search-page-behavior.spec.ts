@@ -3,7 +3,7 @@ import { registerNetworkMocks } from "./networkMocks";
 
 const nestedCategoriesPayload = {
   data: [
-    { id: "cat-1", name: "Vehículos", slug: "vehiculos", parent_id: null },
+    { id: "cat-1", name: "Herramientas", slug: "herramientas", parent_id: null },
     { id: "cat-2", name: "Accesorios", slug: "accesorios", parent_id: "cat-1" },
     { id: "cat-3", name: "Remolques", slug: "remolques", parent_id: "cat-1" },
   ],
@@ -81,7 +81,7 @@ test("search page mobile filters apply nested categories and dynamic filters", a
               description: "Vehículo industrial",
               publication_status: "published",
               image_ids: [],
-              categories: [{ id: "cat-1", name: "Vehículos", slug: "vehiculos" }],
+              categories: [{ id: "cat-1", name: "Herramientas", slug: "herramientas" }],
               owner_data: {
                 owner_id: "company-1",
                 type: "company",
@@ -121,7 +121,7 @@ test("search page mobile filters apply nested categories and dynamic filters", a
   await page.goto("/buscar");
 
   await page.getByRole("button", { name: "Filtros" }).click();
-  await page.getByRole("button", { name: "Vehículos" }).click();
+  await page.getByRole("button", { name: "Herramientas" }).click();
   await page.getByRole("button", { name: "Aplicar filtros" }).click();
 
   await expect(page).toHaveURL(/categories=cat-1%2Ccat-2%2Ccat-3/);

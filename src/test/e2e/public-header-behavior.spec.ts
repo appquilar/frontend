@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
   await registerNetworkMocks(page);
 });
 
-test("public header dismisses the category panel, sends empty searches to /buscar and opens auth from sell CTA", async ({
+test("public header dismisses the category panel, sends empty searches to /buscar and opens auth from add product CTA", async ({
   page,
 }) => {
   await page.goto("/producto/taladro-profesional");
@@ -22,7 +22,7 @@ test("public header dismisses the category panel, sends empty searches to /busca
     .poll(() => new URL(page.url()).pathname)
     .toBe("/buscar");
 
-  await page.getByRole("button", { name: "Vender" }).click();
+  await page.getByRole("button", { name: "Añadir producto" }).click();
   await expect(page.getByRole("dialog").getByText("Accede a tu cuenta")).toBeVisible();
 });
 

@@ -98,7 +98,8 @@ describe("RentalDetails page", () => {
           rentId: "7df21b92-renter-rent",
           senderRole: "system",
           senderName: "Appquilar",
-          content: "Mountain Pro Rentals envió una propuesta.",
+          content:
+            "Actualización de propuesta por Mountain Pro Rentals:\n- Fecha fin: 2026-07-17 → 2026-07-20\n- Precio: 147.00 EUR → 155.00 EUR",
           createdAt: new Date(2026, 6, 10, 9, 30, 0),
           isMine: false,
         },
@@ -124,9 +125,13 @@ describe("RentalDetails page", () => {
 
     expect(await screen.findByRole("heading", { name: "Estado y acciones" })).toBeInTheDocument();
 
-    expect(screen.getByText("Rol actual: Cliente")).toBeInTheDocument();
+    expect(screen.getAllByText("Propuesta enviada").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Aceptar propuesta" })).toBeInTheDocument();
-    expect(screen.getByText("Appquilar · Sistema")).toBeInTheDocument();
+    expect(await screen.findByText("Actividad")).toBeInTheDocument();
+    expect(await screen.findByText("Actualización de propuesta por Mountain Pro Rentals")).toBeInTheDocument();
+    expect(screen.getByText("Fecha fin")).toBeInTheDocument();
+    expect(screen.getByText("2026-07-17")).toBeInTheDocument();
+    expect(screen.getByText("2026-07-20")).toBeInTheDocument();
     expect(screen.queryByText("Inventario del alquiler")).not.toBeInTheDocument();
     expect(screen.queryByText("Editar condiciones")).not.toBeInTheDocument();
 

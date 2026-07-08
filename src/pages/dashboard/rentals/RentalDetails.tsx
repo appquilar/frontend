@@ -64,6 +64,24 @@ const RentalDetails = () => {
               viewerRole={viewerRole}
               transitions={nextTransitions}
               isUpdatingStatus={isUpdatingStatus}
+              rentalEditor={canEditRental ? ({
+                submitProposal,
+                isSubmittingProposal,
+                proposalValidUntilField,
+                transitionActions,
+              }) => (
+                <RentalEditableCard
+                  rental={rental}
+                  viewerRole={viewerRole}
+                  isSaving={isUpdatingRental || isSubmittingProposal}
+                  embedded
+                  submitLabel={submitProposal ? 'Guardar y enviar propuesta' : undefined}
+                  extraFields={proposalValidUntilField}
+                  extraActions={transitionActions}
+                  onSave={handleRentalUpdate}
+                  onSaved={submitProposal}
+                />
+              ) : null}
               onTransition={handleStatusChange}
             />
           </div>
@@ -98,18 +116,7 @@ const RentalDetails = () => {
             <RentalInventoryStatusCard rental={rental} viewerRole={viewerRole} />
           </div>
 
-          {canEditRental && (
-            <div className="order-5">
-              <RentalEditableCard
-                rental={rental}
-                viewerRole={viewerRole}
-                isSaving={isUpdatingRental}
-                onSave={handleRentalUpdate}
-              />
-            </div>
-          )}
-
-          <div className={canEditRental ? 'order-6' : 'order-5'}>
+          <div className="order-5">
             <CustomerInfoCard rental={rental} />
           </div>
         </div>

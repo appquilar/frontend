@@ -29,14 +29,16 @@ vi.mock("@/components/products/CompanyInfo", () => ({
     locationLabel,
     onContact,
     isLoggedIn,
+    canRequestRental,
   }: {
     locationLabel?: string;
     onContact: () => void;
     isLoggedIn: boolean;
+    canRequestRental?: boolean;
   }) => (
     <div>
       <p>{locationLabel}</p>
-      <button type="button" onClick={onContact}>
+      <button type="button" onClick={onContact} disabled={!canRequestRental}>
         {isLoggedIn ? "Contactar empresa" : "Contactar como invitado"}
       </button>
     </div>
@@ -163,6 +165,7 @@ describe("ProductInfo behavior", () => {
       screen.getByText("Ahora mismo no quedan huecos libres para nuevas reservas.")
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Alquiler no disponible ahora" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Contactar empresa" })).toBeDisabled();
   });
 
   it("renders the archived status label when the product is no longer published", () => {

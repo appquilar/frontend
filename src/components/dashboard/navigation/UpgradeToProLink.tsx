@@ -77,22 +77,22 @@ const UpgradeToProLink = ({ onAfterNavigate }: UpgradeToProLinkProps) => {
         void handleUpgradeToPro();
       }}
       disabled={createCheckoutMutation.isPending || userProCheckout.isLoading}
-      className="w-full rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-left transition-colors hover:bg-orange-100 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full rounded-xl border border-[#F19D70]/30 bg-[#F19D70]/10 px-4 py-3 text-left transition-colors hover:bg-[#F19D70]/15 disabled:opacity-60 disabled:cursor-not-allowed"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-orange-600">
+          <p className="text-sm font-semibold text-[#C86A35]">
             {createCheckoutMutation.isPending
               ? "Redirigiendo..."
               : userProCheckout.isLoading
                 ? "Cargando plan..."
-                : "Hazte Pro"}
+                : "Convertir a User Pro"}
           </p>
           <p className="text-xs text-zinc-600">
             Accede a métricas de visitas y mensajes por producto.
           </p>
         </div>
-        <Gem size={16} className="mt-1 shrink-0 text-orange-500" />
+        <Gem size={16} className="mt-1 shrink-0 text-[#F19D70]" />
       </div>
     </button>
   );

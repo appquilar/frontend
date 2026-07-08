@@ -178,6 +178,10 @@ describe("ProductFormPage", () => {
       expect(screen.queryByText("products-list")).not.toBeInTheDocument();
     });
     expect(screen.getByTestId("location-display")).toHaveTextContent("/dashboard/products/product-1");
+
+    const draftLink = await screen.findByRole("link", { name: "Ver borrador" });
+    expect(draftLink).toHaveAttribute("href", "/producto/castillo-inflable");
+    expect(draftLink).toHaveAttribute("target", "_blank");
   });
 
   it("removes stale company scope when creating a personal product", async () => {
@@ -271,11 +275,13 @@ describe("ProductFormPage", () => {
     productEditFormState.payload = {
       ...productEditFormState.payload,
       slug: "local-form-slug",
+      publicationStatus: "published",
     };
     updateProductMutateMock.mockResolvedValue({
       ...productEditFormState.payload,
       id: "product-1",
       slug: "backend-normalized-slug",
+      publicationStatus: "published",
     });
 
     renderWithProviders(

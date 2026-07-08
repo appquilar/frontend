@@ -11,6 +11,7 @@ import {
   useMarkRentMessagesAsRead,
   useRentalMessages,
 } from '@/application/hooks/useRentalMessages';
+import SystemMessageActivity from '@/components/dashboard/messages/SystemMessageActivity';
 import { Rental, RentStatus } from '@/domain/models/Rental';
 import { RentConversationRole } from '@/domain/models/RentConversation';
 import type { RentalMessage } from '@/domain/models/RentalMessage';
@@ -283,7 +284,7 @@ const RentConversationPanel = ({
               {isSummaryOpen ? 'Ocultar detalles' : 'Ver detalles'}
             </Button>
             <Badge className={RentalStatusService.getStatusBadgeClasses(rentalStatus)}>
-              {RentalStatusService.getStatusLabel(rentalStatus)}
+              {RentalStatusService.getStatusLabelForRole(rentalStatus, viewerRole)}
             </Badge>
           </div>
         </div>
@@ -348,53 +349,55 @@ const RentConversationPanel = ({
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${isSystemMessage ? 'w-full' : message.isMine ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${
+                      isSystemMessage ? 'w-full' : message.isMine ? 'justify-end' : 'justify-start'
+                    }`}
                   >
-                    <div
-                      className={`rounded-lg px-3 py-2 ${
-                        isSystemMessage
-                          ? 'w-full border border-slate-300 bg-slate-100 text-slate-800'
-                          : message.isMine
-                          ? 'max-w-[85%] rounded-tr-none bg-primary text-primary-foreground'
-                          : 'max-w-[85%] rounded-tl-none bg-secondary text-secondary-foreground'
-                      }`}
-                    >
-                      {!isSystemMessage && (
+                    {isSystemMessage ? (
+                      <SystemMessageActivity content={message.content} createdAt={message.createdAt} />
+                    ) : (
+                      <div
+                        className={`rounded-lg px-3 py-2 ${
+                          message.isMine
+                            ? 'max-w-[85%] rounded-tr-none bg-primary text-primary-foreground'
+                            : 'max-w-[85%] rounded-tl-none bg-secondary text-secondary-foreground'
+                        }`}
+                      >
                         <p className="mb-1 text-xs font-medium opacity-85">
                           {message.senderName} · {roleLabel[message.senderRole]}
                         </p>
-                      )}
-                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                      <div className="mt-1 flex items-center gap-2 text-[11px] opacity-75">
-                        <span>{formatTimestamp(message.createdAt)}</span>
-                        {!isSystemMessage && isMine && (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                            {deliveryStatus === 'sending' ? (
-                              <>
-                                <Clock className="h-3 w-3" />
-                                Enviando
-                              </>
-                            ) : deliveryStatus === 'failed' ? (
-                              <>
-                                Error al enviar
-                                <button
-                                  type="button"
-                                  className="ml-1 text-xs font-medium text-primary hover:underline"
-                                  onClick={() => retryMessage(message.localId ?? '')}
-                                >
-                                  Reintentar
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <Check className="h-3 w-3" />
-                                Enviado
-                              </>
-                            )}
-                          </span>
-                        )}
+                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] opacity-75">
+                          <span>{formatTimestamp(message.createdAt)}</span>
+                          {isMine && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                              {deliveryStatus === 'sending' ? (
+                                <>
+                                  <Clock className="h-3 w-3" />
+                                  Enviando
+                                </>
+                              ) : deliveryStatus === 'failed' ? (
+                                <>
+                                  Error al enviar
+                                  <button
+                                    type="button"
+                                    className="ml-1 text-xs font-medium text-primary hover:underline"
+                                    onClick={() => retryMessage(message.localId ?? '')}
+                                  >
+                                    Reintentar
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  Enviado
+                                </>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}

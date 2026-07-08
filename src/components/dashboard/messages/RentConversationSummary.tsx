@@ -84,7 +84,7 @@ const RentConversationSummary = ({
         <div>
           <p className="text-muted-foreground">Estado</p>
           <Badge className={RentalStatusService.getStatusBadgeClasses(rental.status)}>
-            {RentalStatusService.getStatusLabel(rental.status)}
+            {RentalStatusService.getStatusLabelForRole(rental.status, conversation.role)}
           </Badge>
         </div>
 

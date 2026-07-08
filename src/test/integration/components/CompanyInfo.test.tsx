@@ -47,4 +47,19 @@ describe("CompanyInfo", () => {
         expect(screen.queryByRole("button", { name: "Crear cuenta para contactar" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Solicitar alquiler" })).not.toBeInTheDocument();
     });
+
+    it("disables the rental request CTA when the product cannot be rented", () => {
+        usePublicCompanyProfileMock.mockReturnValue({ data: null });
+
+        renderWithProviders(
+            <CompanyInfo
+                company={{ id: "company-1", name: "Empresote", slug: "empresote" }}
+                onContact={vi.fn()}
+                isLoggedIn={true}
+                canRequestRental={false}
+            />
+        );
+
+        expect(screen.getByRole("button", { name: "Solicitar alquiler" })).toBeDisabled();
+    });
 });

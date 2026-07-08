@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,12 @@ interface RentalStateWizardProps {
   viewerRole: RentActorRole;
   transitions: RentTransitionOption[];
   isUpdatingStatus: boolean;
+  rentalEditor?: ReactNode | ((actions: {
+    submitProposal?: () => Promise<void>;
+    isSubmittingProposal: boolean;
+    proposalValidUntilField?: ReactNode;
+    transitionActions?: ReactNode;
+  }) => ReactNode);
   onTransition: (input: { status: RentStatus; proposalValidUntil?: Date | null }) => Promise<void>;
 }
 
@@ -43,6 +49,7 @@ const RentalStateWizard = ({
   viewerRole,
   transitions,
   isUpdatingStatus,
+  rentalEditor,
   onTransition,
 }: RentalStateWizardProps) => {
   const [proposalValidUntil, setProposalValidUntil] = useState<string>(
@@ -53,6 +60,9 @@ const RentalStateWizard = ({
   const currentIndex = workflowSteps.findIndex((step) => step === rental.status);
   const cancelTransition = transitions.find((transition) => transition.to === 'cancelled');
   const nonCancelTransitions = transitions.filter((transition) => transition.to !== 'cancelled');
+  const proposalTransition = transitions.find((transition) => transition.to === 'proposal_pending_renter');
+  const hasRejectTransition = transitions.some((transition) => transition.to === 'rejected');
+  const rendersInlineEditor = typeof rentalEditor === 'function';
   const nextStepInfo = RentalStateMachineService.getNextStepInfo(rental);
   const actionRequiredLabel =
     nextStepInfo.actionRequiredBy === 'owner'
@@ -78,15 +88,6 @@ const RentalStateWizard = ({
     : rental.status === 'proposal_pending_renter'
     ? 'La propuesta sigue abierta hasta que se acepte, cambie o caduque.'
     : 'Todavía no hay una propuesta enviada al cliente.';
-  const viewerRoleLabel =
-    viewerRole === 'owner'
-      ? 'Tienda'
-      : viewerRole === 'renter'
-      ? 'Cliente'
-      : viewerRole === 'admin'
-      ? 'Admin'
-      : 'Solo lectura';
-
   const handleTransition = async (transition: RentTransitionOption) => {
     let parsedProposalValidUntil: Date | null | undefined;
 
@@ -99,15 +100,69 @@ const RentalStateWizard = ({
       proposalValidUntil: parsedProposalValidUntil,
     });
   };
+  const visibleNonCancelTransitions = nonCancelTransitions.filter(
+    (transition) => !(proposalTransition && rendersInlineEditor && transition.to === proposalTransition.to)
+  );
+  const showCancelTransition = Boolean(cancelTransition && !hasRejectTransition);
+  const proposalValidUntilField = transitions.some((item) => item.requiresProposalValidUntil) ? (
+    <div className="space-y-1">
+      <label className="text-sm font-medium" htmlFor="proposal-valid-until">
+        Propuesta válida hasta (opcional)
+      </label>
+      <Input
+        id="proposal-valid-until"
+        type="date"
+        lang="es-ES"
+        value={proposalValidUntil}
+        onChange={(event) => setProposalValidUntil(event.target.value)}
+        disabled={isUpdatingStatus}
+      />
+    </div>
+  ) : null;
+  const transitionActions = (
+    <>
+      {visibleNonCancelTransitions.map((transition) => (
+        <Button
+          key={transition.to}
+          type="button"
+          variant={transition.variant ?? 'default'}
+          className="w-full"
+          onClick={() => handleTransition(transition)}
+          disabled={isUpdatingStatus}
+        >
+          {transition.label}
+        </Button>
+      ))}
+
+      {showCancelTransition && cancelTransition && (
+        <Button
+          type="button"
+          variant={cancelTransition.variant ?? 'outline'}
+          className="w-full sm:col-span-2"
+          onClick={() => handleTransition(cancelTransition)}
+          disabled={isUpdatingStatus}
+        >
+          {cancelTransition.label}
+        </Button>
+      )}
+    </>
+  );
+  const renderedRentalEditor = rendersInlineEditor
+    ? rentalEditor({
+        submitProposal: proposalTransition ? () => handleTransition(proposalTransition) : undefined,
+        isSubmittingProposal: isUpdatingStatus,
+        proposalValidUntilField,
+        transitionActions,
+      })
+    : rentalEditor;
 
   return (
     <Card className="border-primary/10 shadow-sm">
       <CardHeader className="space-y-4 p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <Badge className={RentalStatusService.getStatusBadgeClasses(rental.status)}>
-            {RentalStatusService.getStatusLabel(rental.status)}
+            {RentalStatusService.getStatusLabelForRole(rental.status, viewerRole)}
           </Badge>
-          <p className="text-sm font-medium text-muted-foreground">Rol actual: {viewerRoleLabel}</p>
         </div>
         <div className="space-y-2">
           <CardTitle className="text-xl font-semibold tracking-tight">Estado y acciones</CardTitle>
@@ -168,7 +223,7 @@ const RentalStateWizard = ({
                         : 'border-border bg-background'
                     )}
                   >
-                    <p className="font-medium">{RentalStatusService.getStatusLabel(step)}</p>
+                    <p className="font-medium">{RentalStatusService.getStatusLabelForRole(step, viewerRole)}</p>
                     {isCurrent && <p className="mt-1 text-muted-foreground">Estado actual</p>}
                     {isCompleted && <p className="mt-1 text-emerald-700">Completado</p>}
                     {!isCurrent && !isCompleted && <p className="mt-1 text-muted-foreground">Pendiente</p>}
@@ -215,51 +270,20 @@ const RentalStateWizard = ({
             </p>
           </div>
 
-          {transitions.some((item) => item.requiresProposalValidUntil) && (
-            <div className="grid gap-2 sm:max-w-sm">
-              <label className="text-sm font-medium" htmlFor="proposal-valid-until">
-                Propuesta válida hasta (opcional)
-              </label>
-              <Input
-                id="proposal-valid-until"
-                type="date"
-                lang="es-ES"
-                value={proposalValidUntil}
-                onChange={(event) => setProposalValidUntil(event.target.value)}
-                disabled={isUpdatingStatus}
-              />
-            </div>
-          )}
+          {renderedRentalEditor}
 
-          {transitions.length === 0 ? (
-            <p className="rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">
-              No hay acciones operativas disponibles para tu rol en este estado.
-            </p>
-          ) : (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {nonCancelTransitions.map((transition) => (
-                <Button
-                  key={transition.to}
-                  variant={transition.variant ?? 'default'}
-                  className="w-full"
-                  onClick={() => handleTransition(transition)}
-                  disabled={isUpdatingStatus}
-                >
-                  {transition.label}
-                </Button>
-              ))}
+          {!rendersInlineEditor && proposalValidUntilField}
 
-              {cancelTransition && (
-                <Button
-                  variant={cancelTransition.variant ?? 'outline'}
-                  className="w-full sm:col-span-2"
-                  onClick={() => handleTransition(cancelTransition)}
-                  disabled={isUpdatingStatus}
-                >
-                  {cancelTransition.label}
-                </Button>
-              )}
-            </div>
+          {!rendersInlineEditor && (
+            transitions.length === 0 ? (
+              <p className="rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                No hay acciones operativas disponibles para tu rol en este estado.
+              </p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {transitionActions}
+              </div>
+            )
           )}
         </div>
       </CardContent>

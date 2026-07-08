@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, Menu, Search, User, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, Plus, Search, User, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AuthModal from "../auth/AuthModal";
@@ -382,9 +382,10 @@ const Header = () => {
                             type="button"
                             size="sm"
                             onClick={handleSellClick}
-                            className="h-10 rounded-full px-5 text-sm"
+                            className="h-10 gap-2 rounded-full px-5 text-sm"
                         >
-                            Vender
+                            <Plus size={16} aria-hidden="true" />
+                            Añadir producto
                         </Button>
                     </div>
                 </div>

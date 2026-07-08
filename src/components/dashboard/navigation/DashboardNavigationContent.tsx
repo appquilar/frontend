@@ -120,7 +120,7 @@ const DashboardNavigationContent = ({
                 </div>
             )}
 
-            {shouldShowProviderPrompts && canUpgradeToUserPro && (
+            {canUpgradeToUserPro && (
                 <div className="px-2 mb-2">
                     <UpgradeToProLink
                         onAfterNavigate={() => {

@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import SystemMessageActivity from '@/components/dashboard/messages/SystemMessageActivity';
 import { MessageSquare, Send } from 'lucide-react';
 import type { RentMessageSenderRole } from '@/domain/models/RentalMessage';
 import {
@@ -145,23 +146,33 @@ const RentalMessagesCard = ({ rentId }: RentalMessagesCardProps) => {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.isMine ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${
+                    message.senderRole === 'system'
+                      ? 'w-full'
+                      : message.isMine
+                      ? 'justify-end'
+                      : 'justify-start'
+                  }`}
                 >
-                  <div
-                    className={`max-w-[90%] rounded-2xl px-3 py-2 sm:max-w-[80%] ${
-                      message.isMine
-                        ? 'bg-primary text-primary-foreground rounded-tr-md'
-                        : 'bg-secondary text-secondary-foreground rounded-tl-md'
-                    }`}
-                  >
-                    <p className="mb-1 text-xs font-medium opacity-85">
-                      {message.senderName} · {senderRoleLabel[message.senderRole]}
-                    </p>
-                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                    <p className="mt-1 text-[11px] opacity-75">
-                      {formatTimestamp(message.createdAt)}
-                    </p>
-                  </div>
+                  {message.senderRole === 'system' ? (
+                    <SystemMessageActivity content={message.content} createdAt={message.createdAt} />
+                  ) : (
+                    <div
+                      className={`max-w-[90%] rounded-2xl px-3 py-2 sm:max-w-[80%] ${
+                        message.isMine
+                          ? 'bg-primary text-primary-foreground rounded-tr-md'
+                          : 'bg-secondary text-secondary-foreground rounded-tl-md'
+                      }`}
+                    >
+                      <p className="mb-1 text-xs font-medium opacity-85">
+                        {message.senderName} · {senderRoleLabel[message.senderRole]}
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                      <p className="mt-1 text-[11px] opacity-75">
+                        {formatTimestamp(message.createdAt)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={bottomRef} />

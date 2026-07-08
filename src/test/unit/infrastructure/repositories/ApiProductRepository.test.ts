@@ -244,6 +244,45 @@ describe("ApiProductRepository", () => {
         );
     });
 
+    it("sends auth headers when loading a public product by slug", async () => {
+        apiClient.get.mockResolvedValueOnce({
+            success: true,
+            data: {
+                id: "product-1",
+                name: "Castillo inflable",
+                slug: "castillo-inflable",
+                description: "Inflable para fiestas",
+                publication_status: "draft",
+                image_ids: [],
+                categories: [],
+            },
+        });
+
+        const repository = new ApiProductRepository(
+            apiClient as unknown as ConstructorParameters<typeof ApiProductRepository>[0],
+            () => ({
+                token: "jwt-token",
+                userId: null,
+                roles: [],
+                expiresAt: null,
+            })
+        );
+
+        await expect(repository.getBySlug("castillo-inflable")).resolves.toMatchObject({
+            id: "product-1",
+            publicationStatus: "draft",
+        });
+
+        expect(apiClient.get).toHaveBeenCalledWith(
+            "/api/products/castillo-inflable",
+            {
+                headers: {
+                    Authorization: "Bearer jwt-token",
+                },
+            }
+        );
+    });
+
     it("uses DELETE for product removal", async () => {
         apiClient.delete.mockResolvedValue(undefined);
 

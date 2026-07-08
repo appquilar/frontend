@@ -42,7 +42,11 @@ const createDraftProduct = (): Product => ({
 const ProductFormPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
-    const [lastSavedProduct, setLastSavedProduct] = useState<{ id: string; slug: string | null } | null>(null);
+    const [lastSavedProduct, setLastSavedProduct] = useState<{
+        id: string;
+        slug: string | null;
+        publicationStatus: Product['publicationStatus'];
+    } | null>(null);
     const isAddMode = !productId || productId === 'new';
     const {
         hasRequiredAddress,
@@ -121,6 +125,7 @@ const ProductFormPage = () => {
                     setLastSavedProduct({
                         id: createdProductId,
                         slug: createdProduct?.slug || updatedProduct.slug || createdProductId,
+                        publicationStatus: createdProduct?.publicationStatus ?? updatedProduct.publicationStatus ?? 'draft',
                     });
                     navigate(`/dashboard/products/${encodeURIComponent(createdProductId)}`, { replace: true });
                 }
@@ -138,6 +143,7 @@ const ProductFormPage = () => {
                 setLastSavedProduct({
                     id: productId as string,
                     slug: savedProductSlug,
+                    publicationStatus: savedProduct?.publicationStatus ?? updatedProduct.publicationStatus ?? product?.publicationStatus ?? 'draft',
                 });
             }
         } catch (error) {
@@ -248,13 +254,13 @@ const ProductFormPage = () => {
             )}
 
             {lastSavedProduct && (
-                <Alert className="border-emerald-200 bg-emerald-50">
+                <Alert className="border-primary/30 bg-primary/10">
                     <AlertTitle>Producto guardado</AlertTitle>
                     <AlertDescription>
                         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                             <Button asChild size="sm" variant="outline">
                                 <a href={buildProductPath(lastSavedProduct.slug ?? lastSavedProduct.id)} target="_blank" rel="noreferrer">
-                                    Ver publicación
+                                    {lastSavedProduct.publicationStatus === 'published' ? 'Ver publicación' : 'Ver borrador'}
                                 </a>
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/products/new')}>

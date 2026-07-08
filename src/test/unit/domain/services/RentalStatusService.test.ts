@@ -62,6 +62,18 @@ describe("RentalStatusService", () => {
     );
   });
 
+  it("uses the renter perspective for pending lead requests", () => {
+    expect(RentalStatusService.getStatusLabelForRole("lead_pending", "renter")).toBe(
+      "Solicitud enviada"
+    );
+    expect(RentalStatusService.getStatusLabelForRole("lead_pending", "owner")).toBe(
+      "Solicitud recibida"
+    );
+    expect(RentalStatusService.getStatusLabelForRole("proposal_pending_renter", "renter")).toBe(
+      "Propuesta enviada"
+    );
+  });
+
   it("returns badge classes for each known state and a safe default", () => {
     expect(
       RentalStatusService.getStatusBadgeClasses("lead_pending")

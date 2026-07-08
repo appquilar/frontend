@@ -178,7 +178,10 @@ export class ApiProductRepository implements ProductRepository {
     async getBySlug(slug: string): Promise<Product | null> {
         try {
             const response = await this.client.get<any>(
-                `/api/products/${slug}`
+                `/api/products/${slug}`,
+                {
+                    headers: this.getAuthHeaders(),
+                }
             );
             const data = (response as any).data ? (response as any).data : response;
             return this.mapToDomain(data);

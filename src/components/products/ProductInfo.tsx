@@ -301,6 +301,7 @@ const ProductInfo = ({
                     locationLabel={providerLocationLabel}
                     onContact={handleContact}
                     isLoggedIn={isLoggedIn}
+                    canRequestRental={rentability.isRentableNow}
                 />
             </div>
         </div>

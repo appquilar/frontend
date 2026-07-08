@@ -98,7 +98,7 @@ const RentConversationList = ({
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">{conversation.productName}</p>
                         <Badge className={`shrink-0 ${RentalStatusService.getStatusBadgeClasses(conversation.rental.status)}`}>
-                          {RentalStatusService.getStatusLabel(conversation.rental.status)}
+                          {RentalStatusService.getStatusLabelForRole(conversation.rental.status, conversation.role)}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{conversation.counterpartName}</p>

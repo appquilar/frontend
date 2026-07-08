@@ -39,6 +39,17 @@ export class RentalStatusService {
     }
   }
 
+  static getStatusLabelForRole(
+    status: string,
+    role: 'owner' | 'renter' | 'admin' | 'viewer'
+  ): string {
+    if (status === 'lead_pending' && role === 'renter') {
+      return 'Solicitud enviada';
+    }
+
+    return this.getStatusLabel(status);
+  }
+
   /**
    * Obtiene las clases CSS para una insignia de estado
    */

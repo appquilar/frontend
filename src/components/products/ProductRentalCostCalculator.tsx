@@ -134,7 +134,7 @@ const ProductRentalCostCalculator = ({
             {hasSelectedDateRange && availability && (
                 <div className={`rounded-lg border p-3 text-sm ${
                     availability.canRequest
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                        ? "border-primary/30 bg-primary/10 text-primary"
                         : availability.managedByPlatform
                             ? "border-amber-200 bg-amber-50 text-amber-800"
                             : "border-slate-200 bg-slate-50 text-slate-700"

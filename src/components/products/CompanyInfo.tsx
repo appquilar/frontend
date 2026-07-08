@@ -13,9 +13,10 @@ interface CompanyInfoProps {
   locationLabel?: string;
   onContact: () => void;
   isLoggedIn: boolean;
+  canRequestRental?: boolean;
 }
 
-const CompanyInfo = ({ company, locationLabel, onContact, isLoggedIn }: CompanyInfoProps) => {
+const CompanyInfo = ({ company, locationLabel, onContact, isLoggedIn, canRequestRental = true }: CompanyInfoProps) => {
   const companyProfileQuery = usePublicCompanyProfile(company.slug || null);
   const companyProfile = companyProfileQuery.data ?? null;
 
@@ -84,6 +85,7 @@ const CompanyInfo = ({ company, locationLabel, onContact, isLoggedIn }: CompanyI
           <Button
             className="mt-2 w-full gap-2"
             onClick={onContact}
+            disabled={!canRequestRental}
           >
             <CalendarCheck size={16} />
             Solicitar alquiler

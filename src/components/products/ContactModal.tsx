@@ -239,7 +239,7 @@ const ContactModal = ({
           {availabilityQuery.data && (
             <div className={`rounded-md border p-3 text-sm ${
               availabilityQuery.data.canRequest
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                ? 'border-primary/30 bg-primary/10 text-primary'
                 : availabilityQuery.data.managedByPlatform
                   ? 'border-amber-200 bg-amber-50 text-amber-800'
                   : 'border-slate-200 bg-slate-50 text-slate-700'

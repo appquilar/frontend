@@ -40,6 +40,45 @@ const sampleRental = (): Rental => ({
 });
 
 describe("RentalEditableCard", () => {
+  it("renders the editable form in embedded mode", () => {
+    render(
+      <RentalEditableCard
+        rental={sampleRental()}
+        viewerRole="owner"
+        isSaving={false}
+        embedded
+        onSave={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Editar condiciones" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Fecha de inicio")).toHaveValue("2026-04-14");
+    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeInTheDocument();
+  });
+
+  it("can run an action after saving", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onSaved = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <RentalEditableCard
+        rental={sampleRental()}
+        viewerRole="owner"
+        isSaving={false}
+        submitLabel="Guardar y enviar propuesta"
+        onSave={onSave}
+        onSaved={onSaved}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Guardar y enviar propuesta" }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalled();
+      expect(onSaved).toHaveBeenCalled();
+    });
+  });
+
   it("lets price fields be cleared and rewritten naturally", async () => {
     const user = userEvent.setup();
 

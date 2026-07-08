@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -72,6 +72,10 @@ interface RentalEditableCardProps {
   rental: Rental;
   viewerRole: RentActorRole;
   isSaving: boolean;
+  embedded?: boolean;
+  submitLabel?: string;
+  extraFields?: ReactNode;
+  extraActions?: ReactNode;
   onSave: (data: {
     startDate: Date;
     endDate: Date;
@@ -79,6 +83,7 @@ interface RentalEditableCardProps {
     deposit?: Money;
     price?: Money;
   }) => Promise<void>;
+  onSaved?: () => Promise<void>;
 }
 
 const toDateInput = (date: Date): string => {
@@ -97,8 +102,26 @@ const fromDateInput = (dateText: string, endOfDay: boolean): Date => {
 
 const toCents = (value: number): number => Math.round((Number.isFinite(value) ? value : 0) * 100);
 
-const RentalEditableCard = ({ rental, viewerRole, isSaving, onSave }: RentalEditableCardProps) => {
+const RentalEditableCard = ({
+  rental,
+  viewerRole,
+  isSaving,
+  embedded = false,
+  submitLabel = 'Guardar cambios',
+  extraFields,
+  extraActions,
+  onSave,
+  onSaved,
+}: RentalEditableCardProps) => {
   const canEditPrice = viewerRole === 'owner' || viewerRole === 'admin';
+  const twoColumnGridClassName = embedded
+    ? 'grid grid-cols-1 gap-3 sm:grid-cols-2'
+    : 'grid grid-cols-1 md:grid-cols-2 gap-3';
+  const actionClassName = embedded
+    ? extraActions
+      ? 'grid gap-2 sm:grid-cols-3'
+      : 'grid gap-2 sm:grid-cols-2'
+    : 'flex flex-col sm:flex-row gap-2';
   const form = useForm<RentalEditValues, undefined, RentalEditSubmitValues>({
     resolver: zodResolver(rentalEditSchema),
     defaultValues: {
@@ -171,10 +194,110 @@ const RentalEditableCard = ({ rental, viewerRole, isSaving, onSave }: RentalEdit
       };
     }
 
-    await onSave({
-      ...payload,
-    });
+    await onSave({ ...payload });
+    await onSaved?.();
   };
+
+  const editForm = (
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <div className={twoColumnGridClassName}>
+        <div className="space-y-1">
+          <Label htmlFor="edit-start-date">Fecha de inicio</Label>
+          <Input id="edit-start-date" type="date" lang="es-ES" {...form.register('startDate')} />
+          {form.formState.errors.startDate?.message && (
+            <p className="text-sm text-destructive">{form.formState.errors.startDate.message}</p>
+          )}
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="edit-end-date">Fecha de fin</Label>
+          <Input id="edit-end-date" type="date" lang="es-ES" {...form.register('endDate')} />
+          {form.formState.errors.endDate?.message && (
+            <p className="text-sm text-destructive">{form.formState.errors.endDate.message}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor="edit-requested-quantity">Cantidad solicitada</Label>
+        <Input
+          id="edit-requested-quantity"
+          type="number"
+          min={1}
+          step={1}
+          {...form.register('requestedQuantity')}
+        />
+        {form.formState.errors.requestedQuantity?.message && (
+          <p className="text-sm text-destructive">{form.formState.errors.requestedQuantity.message}</p>
+        )}
+      </div>
+
+      <div className={twoColumnGridClassName}>
+        <div className="space-y-1">
+          <Label htmlFor="edit-price">Precio ({rental.price.currency})</Label>
+          <Input
+            id="edit-price"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            disabled={!canEditPrice}
+            {...form.register('priceAmount')}
+          />
+          {form.formState.errors.priceAmount?.message && (
+            <p className="text-sm text-destructive">{form.formState.errors.priceAmount.message}</p>
+          )}
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="edit-deposit">Fianza ({rental.deposit.currency})</Label>
+          <Input
+            id="edit-deposit"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            disabled={!canEditPrice}
+            {...form.register('depositAmount')}
+          />
+          {form.formState.errors.depositAmount?.message && (
+            <p className="text-sm text-destructive">{form.formState.errors.depositAmount.message}</p>
+          )}
+        </div>
+      </div>
+
+      {extraFields && (
+        <div className={twoColumnGridClassName}>
+          {extraFields}
+        </div>
+      )}
+
+      <div className={actionClassName}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleRecalculate}
+          disabled={isCalculating || isSaving || !canEditPrice}
+        >
+          {isCalculating ? 'Calculando...' : 'Recalcular desde producto'}
+        </Button>
+        <Button type="submit" disabled={isSaving || isCalculating}>
+          {isSaving ? 'Guardando...' : submitLabel}
+        </Button>
+        {extraActions}
+      </div>
+    </form>
+  );
+
+  if (embedded) {
+    return (
+      <section className="space-y-4 border-t pt-4">
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">Editar condiciones</h3>
+          <p className="text-sm text-muted-foreground">
+            Ajusta fechas, cantidad y precios desde esta misma vista.
+          </p>
+        </div>
+        {editForm}
+      </section>
+    );
+  }
 
   return (
     <Card>
@@ -186,83 +309,7 @@ const RentalEditableCard = ({ rental, viewerRole, isSaving, onSave }: RentalEdit
       </CardHeader>
 
       <CardContent className="space-y-4 px-5 pb-5 pt-0 sm:px-6 sm:pb-6">
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="edit-start-date">Fecha de inicio</Label>
-              <Input id="edit-start-date" type="date" lang="es-ES" {...form.register('startDate')} />
-              {form.formState.errors.startDate?.message && (
-                <p className="text-sm text-destructive">{form.formState.errors.startDate.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="edit-end-date">Fecha de fin</Label>
-              <Input id="edit-end-date" type="date" lang="es-ES" {...form.register('endDate')} />
-              {form.formState.errors.endDate?.message && (
-                <p className="text-sm text-destructive">{form.formState.errors.endDate.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="edit-requested-quantity">Cantidad solicitada</Label>
-            <Input
-              id="edit-requested-quantity"
-              type="number"
-              min={1}
-              step={1}
-              {...form.register('requestedQuantity')}
-            />
-            {form.formState.errors.requestedQuantity?.message && (
-              <p className="text-sm text-destructive">{form.formState.errors.requestedQuantity.message}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="edit-price">Precio ({rental.price.currency})</Label>
-              <Input
-                id="edit-price"
-                type="text"
-                inputMode="decimal"
-                placeholder="0.00"
-                disabled={!canEditPrice}
-                {...form.register('priceAmount')}
-              />
-              {form.formState.errors.priceAmount?.message && (
-                <p className="text-sm text-destructive">{form.formState.errors.priceAmount.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="edit-deposit">Fianza ({rental.deposit.currency})</Label>
-              <Input
-                id="edit-deposit"
-                type="text"
-                inputMode="decimal"
-                placeholder="0.00"
-                disabled={!canEditPrice}
-                {...form.register('depositAmount')}
-              />
-              {form.formState.errors.depositAmount?.message && (
-                <p className="text-sm text-destructive">{form.formState.errors.depositAmount.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRecalculate}
-              disabled={isCalculating || isSaving || !canEditPrice}
-            >
-              {isCalculating ? 'Calculando...' : 'Recalcular desde producto'}
-            </Button>
-            <Button type="submit" disabled={isSaving || isCalculating}>
-              {isSaving ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
-          </div>
-        </form>
+        {editForm}
       </CardContent>
     </Card>
   );

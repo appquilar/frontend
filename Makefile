@@ -1,9 +1,6 @@
 # Variables
-PROJECT_NAME = appquilar
-DOCKER_COMPOSE = docker-compose
 NPM = npm
 PLAYWRIGHT = npx playwright
-CONTAINER_FE = $(PROJECT_NAME)-web-dev
 
 # Colors
 GREEN = \033[0;32m
@@ -11,9 +8,7 @@ YELLOW = \033[0;33m
 RED = \033[0;31m
 NC = \033[0m # No color
 
-NETWORK_NAME = appquilar
-
-.PHONY: help install dev dev-landing dev-domains-setup dev-domains-up dev-domains-down stripe-check-account stripe-listen dev-e2e-seed e2e-seed-server landing-sync landing-build-sync build build-landing up up-prod down down-prod restart logs clean test test-quality test-unit test-integration test-e2e test-e2e-dashboard test-e2e-dashboard-shard test-e2e-dashboard-ui test-e2e-dashboard-ui-shard e2e-dashboard-generate test-ci coverage coverage-e2e coverage-top coverage-all ensure-playwright start start-prod exec destroy rebuild network check-be shell
+.PHONY: help install dev dev-landing stripe-check-account stripe-listen dev-e2e-seed e2e-seed-server landing-sync landing-build-sync build build-landing clean test test-quality test-unit test-integration test-e2e test-e2e-dashboard test-e2e-dashboard-shard test-e2e-dashboard-ui test-e2e-dashboard-ui-shard e2e-dashboard-generate test-ci coverage coverage-e2e coverage-top coverage-all ensure-playwright exec
 
 STRIPE = stripe
 STRIPE_EXPECTED_ACCOUNT_ID ?= acct_1T1MQ2COjGpVsE06
@@ -26,9 +21,6 @@ help:
 	@echo "  make install     - Install dependencies"
 	@echo "  make dev         - Start development environment (Vite) on host"
 	@echo "  make dev-landing - Start development in landing-only mode"
-	@echo "  make dev-domains-setup - Generate local HTTPS certs + show hosts setup for dev.* domains"
-	@echo "  make dev-domains-up - Start API + FE + HTTPS proxy for dev.appquilar.com / dev.api.appquilar.com"
-	@echo "  make dev-domains-down - Stop API + FE + HTTPS proxy local domains stack"
 	@echo "  make stripe-check-account - Verify Stripe CLI is authenticated to the expected Appquilar account"
 	@echo "  make stripe-listen - Forward Stripe webhooks to the local dev API"
 	@echo "  make dev-e2e-seed - Start FE locally using deterministic E2E seed API"
@@ -37,18 +29,7 @@ help:
 	@echo "  make e2e-seed-server - Start deterministic seed API server"
 	@echo "  make build       - Build the application for production"
 	@echo "  make build-landing - Build FE in landing-only mode"
-	@echo "  make up          - Start API + FE + HTTPS proxy (dev.appquilar.com / dev.api.appquilar.com)"
-	@echo "  make up-prod     - Start Docker containers (legacy production compose)"
-	@echo "  make start       - Start the FE in Docker in DEVELOPMENT mode (Vite + hot reload)"
-	@echo "  make start-prod  - Start the FE in Docker like in the BE (Nginx + built dist)"
-	@echo "  make down        - Stop API + FE + HTTPS proxy local stack"
-	@echo "  make down-prod   - Stop legacy production compose containers"
-	@echo "  make restart     - Restart Docker containers"
-	@echo "  make logs        - Show container logs"
 	@echo "  make clean       - Remove dist/ and node_modules/"
-	@echo "  make destroy     - Remove containers, images and volumes"
-	@echo "  make rebuild     - Equivalent to clean + build + up"
-	@echo "  make shell       - Enter the FE container to execute npm or other commands"
 	@echo "  make test        - Run all FE tests (unit + integration + public e2e + dashboard e2e)"
 	@echo "  make test-quality - Run FE meaningful-test guard"
 	@echo "  make test-unit   - Run FE unit tests"
@@ -64,16 +45,6 @@ help:
 	@echo "  make coverage-e2e - Run FE E2E coverage (console + html + lcov + summary)"
 	@echo "  make coverage-top - Show the files with lowest FE line coverage"
 	@echo "  make coverage-all - Run FE e2e + unit+integration coverage"
-	@echo "  make check-be    - Check if the FE can reach the BE inside Docker"
-
-# Create network only if it doesn't exist
-network:
-	@if [ -z "$$(docker network ls --filter name=^$(NETWORK_NAME)$$ -q)" ]; then \
-		echo "⛵  Creating network $(NETWORK_NAME)..."; \
-		docker network create $(NETWORK_NAME); \
-	else \
-		echo "✔️  Network $(NETWORK_NAME) already exists"; \
-	fi
 
 # Install dependencies
 install:
@@ -89,33 +60,6 @@ dev-landing:
 	@echo "${GREEN}Starting frontend in landing-only mode...${NC}"
 	$(NPM) run landing:sync
 	$(NPM) run dev:landing
-
-dev-domains-setup:
-	@echo "${GREEN}Preparing local HTTPS setup for dev domains...${NC}"
-	./docker/dev-domains/scripts/setup-local-https.sh
-
-dev-domains-up: network dev-domains-setup
-	@echo "${GREEN}Starting API stack for local HTTPS domains...${NC}"
-	$(DOCKER_COMPOSE) -f ../api/docker-compose.yml up -d php messenger mysql mysql_integration mailpit
-	@if ( [ -f .env ] && grep -Eiq '^VITE_LANDING_ONLY_MODE=(1|true|yes|on)$$' .env ) || ( [ -f .env.local ] && grep -Eiq '^VITE_LANDING_ONLY_MODE=(1|true|yes|on)$$' .env.local ); then \
-		echo "${GREEN}Landing-only mode detected. Syncing landing assets...${NC}"; \
-		$(NPM) run landing:sync; \
-	fi
-	@echo "${GREEN}Starting FE (Vite) stack...${NC}"
-	VITE_API_BASE_URL=https://dev.api.appquilar.com $(DOCKER_COMPOSE) -f docker-compose.dev.yml up -d --build --renew-anon-volumes web
-	@echo "${GREEN}Starting HTTPS reverse proxy (Caddy)...${NC}"
-	$(DOCKER_COMPOSE) -f docker/dev-domains/docker-compose.yml up -d --force-recreate dev-proxy
-	@echo ""
-	@echo "${GREEN}Ready:${NC}"
-	@echo "  FE:  https://dev.appquilar.com"
-	@echo "  API: https://dev.api.appquilar.com"
-	@echo ""
-
-dev-domains-down:
-	@echo "${GREEN}Stopping local HTTPS domains stack...${NC}"
-	-$(DOCKER_COMPOSE) -f docker/dev-domains/docker-compose.yml down
-	-$(DOCKER_COMPOSE) -f docker-compose.dev.yml down
-	-$(DOCKER_COMPOSE) -f ../api/docker-compose.yml down
 
 stripe-check-account:
 	@if ! command -v $(STRIPE) >/dev/null 2>&1; then \
@@ -169,67 +113,10 @@ build-landing:
 	@echo "${GREEN}Building frontend in landing-only mode...${NC}"
 	$(NPM) run build:landing
 
-# Default up/down now use local HTTPS domains stack
-up: dev-domains-up
-
-# Legacy production-compose up
-up-prod:
-	@echo "${GREEN}Starting Docker containers (legacy production compose)...${NC}"
-	$(DOCKER_COMPOSE) up -d
-
-# Start FE (Docker) in DEVELOPMENT mode (Vite + hot reload)
-start: network
-	@echo "${GREEN}Starting frontend in Docker (development mode)...${NC}"
-	$(DOCKER_COMPOSE) -f docker-compose.dev.yml up -d --build
-	@echo ""
-	@echo "${GREEN}Frontend (dev) available at:${NC} http://localhost:8080"
-	@echo ""
-
-# Start FE (Docker) in PRODUCTION mode (Nginx + dist)
-start-prod: network
-	@echo "${GREEN}Starting frontend in Docker (production mode)...${NC}"
-	$(DOCKER_COMPOSE) -f docker-compose.yml up -d --build
-	@echo ""
-	@echo "${GREEN}Frontend (prod) available at:${NC} http://localhost:8080"
-	@echo ""
-
-# Default down for local HTTPS domains stack
-down: dev-domains-down
-
-# Legacy production-compose down
-down-prod:
-	@echo "${GREEN}Stopping Docker containers (legacy production compose)...${NC}"
-	$(DOCKER_COMPOSE) down
-
-# Restart containers
-restart:
-	@echo "${GREEN}Restarting Docker containers...${NC}"
-	$(DOCKER_COMPOSE) restart
-
-# Show logs
-logs:
-	@echo "${GREEN}Showing logs...${NC}"
-	$(DOCKER_COMPOSE) logs -f
-
 # Clean generated files
 clean:
 	@echo "${GREEN}Cleaning dist/ and node_modules/...${NC}"
 	rm -rf dist node_modules
-
-# Enter the FE container
-shell:
-	@echo "${GREEN}Entering the FE container...${NC}"
-	@docker exec -it $(CONTAINER_FE) sh || echo "${RED}❌ The container cannot be found. Is it running?${NC}"
-
-# Destroy everything: containers, images, and volumes
-destroy:
-	@echo "${GREEN}Destroying containers, images, and volumes for the FE...${NC}"
-	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
-	@echo "✔️ Project cleaned completely"
-
-# Rebuild (clean + build + up)
-rebuild: clean build up
-	@echo "${GREEN}Completed full rebuild${NC}"
 
 # Run tests
 test:
@@ -332,14 +219,3 @@ coverage-top:
 coverage-all:
 	@$(MAKE) coverage-e2e
 	@$(MAKE) coverage
-
-# Check connectivity FE → BE inside Docker (production container name)
-check-be:
-	@echo "${GREEN}Checking Backend communication...${NC}"
-	@if docker ps --format '{{.Names}}' | grep -q "$(CONTAINER_FE)"; then \
-		echo "${GREEN}→${NC} ${YELLOW}Running test inside container $(CONTAINER_FE)...${NC}"; \
-		docker exec -it $(CONTAINER_FE) sh -c "wget -qO- http://php/api/health || echo 'ERROR'"; \
-	else \
-		echo "${RED}❌ FE container is not running. Execute: make start-prod${NC}"; \
-		exit 1; \
-	fi

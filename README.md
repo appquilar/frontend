@@ -5,8 +5,7 @@ This is the frontend for **Appquilar**, built with **React + Vite** and designed
 The project supports:
 
 - **Local development with Vite + hot reload (HMR)**
-- **Docker development environment**
-- **Production builds served via Nginx**
+- **Production-ready static builds**
 - A modular, scalable architecture structured around **domain modules**
 
 ## Inventory model
@@ -113,49 +112,6 @@ VITE_LANDING_ENTRY=/landing/index.html
 ```
 
 When `VITE_LANDING_ONLY_MODE=true`, the platform app shell is not mounted and platform API endpoints are not called.
-
-### Local domains with HTTPS
-
-```bash
-make up
-```
-
-In another terminal, forward Stripe webhooks locally:
-
-```bash
-make stripe-check-account
-make stripe-listen
-```
-
-For the host-local API on `http://127.0.0.1:8000`, override the forward target:
-
-```bash
-STRIPE_FORWARD_TO=http://127.0.0.1:8000/api/billing/webhook/stripe make stripe-listen
-```
-
-After `stripe login` is already done, the local Stripe flow is:
-
-1. Run `make up`.
-2. Run `make stripe-check-account` and confirm it reports `acct_1T1MQ2COjGpVsE06`.
-3. Run `make stripe-listen` in another terminal.
-4. If the `whsec_...` shown by Stripe CLI is different from the one in the backend env, copy `/Users/victor/development/appquilar/api/.env.local.example` to `/Users/victor/development/appquilar/api/.env.local`, set `STRIPE_WEBHOOK_SECRET=whsec_...`, and restart the API container.
-
-Example:
-
-```bash
-cp /Users/victor/development/appquilar/api/.env.local.example /Users/victor/development/appquilar/api/.env.local
-docker-compose -f /Users/victor/development/appquilar/api/docker-compose.yml restart php
-```
-
-You do not need to create a new Stripe Dashboard webhook for local development. Keep `make stripe-listen` running while testing billing.
-The local listener forwards the same billing event families handled by the API: Checkout completion/expiration, subscription lifecycle updates, paid invoices, payment failures, and payments requiring customer action.
-
-Domains:
-
-- `https://dev.appquilar.com` (frontend)
-- `https://dev.api.appquilar.com` (backend API)
-
-See `docs/local-dev-domains-https.md` for full setup details, including the local Stripe webhook flow.
 
 ## Dashboard E2E (Seeded)
 

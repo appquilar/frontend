@@ -5,8 +5,7 @@ This is the frontend for Appquilar, built with React and Vite and structured usi
 The project supports:
 
 - Local development with Vite (hot reload)
-- Docker development environment (Vite + volumes)
-- Production deployment using Nginx and a static build
+- Production-ready static builds
 - Modular architecture based on domain modules
 
 ## Project Structure
@@ -15,12 +14,6 @@ The following tree is kept narrow on purpose so it renders cleanly in most viewe
 
 ```
 frontend/
-  docker/
-    Dockerfile          # Production image (Nginx + static build)
-    Dockerfile.dev      # Development image (Vite + HMR)
-    nginx.conf          # Nginx configuration
-  docker-compose.yml    # Production compose file
-  docker-compose.dev.yml
   Makefile
   src/
     domain/
@@ -126,18 +119,6 @@ Depends on application services and domain, never infrastructure.
 
 ## Development Workflow
 
-### Start development in Docker (Vite + hot reload)
-
-```
-make start
-```
-
-App available at:
-
-```
-http://localhost:8080
-```
-
 ### Run Vite locally without Docker
 
 ```
@@ -145,22 +126,7 @@ npm install
 npm run dev
 ```
 
-When QA runs the frontend directly through Vite at `http://127.0.0.1:5173`,
-start the Symfony API with `APP_FE_HOST=http://127.0.0.1:5173` so transactional
-email links point back to the tested frontend. The default `localhost:8080`
-matches the Docker/Make development stack.
-
-### Production mode (Nginx + static build)
-
-```
-make start-prod
-```
-
-Served at:
-
-```
-http://localhost:8080
-```
+For the HTTPS local development stack, use the infrastructure repository.
 
 ## Makefile Commands
 
@@ -171,15 +137,7 @@ make dev-landing
 make landing-sync
 make landing-build-sync
 make build-landing
-make start
-make start-prod
-make down
-make logs
 make clean
-make destroy
-make rebuild
-make shell
-make check-be
 ```
 
 ## Environment Variables (Vite)
@@ -237,46 +195,6 @@ Landing source discovery order used by the sync script:
 2. `APPQUILAR_LANDING_ROOT`
 3. `../appquilar-landing`
 4. `../appquilar-landing1`
-
-## Local Domains + HTTPS (like Glowr)
-
-Expose local FE and API with real HTTPS certificates:
-
-- FE: `https://dev.appquilar.com`
-- API: `https://dev.api.appquilar.com`
-
-Setup (one-time):
-
-```bash
-make up
-```
-
-`make up` already runs setup automatically before starting services.
-
-Setup script details:
-
-- creates local TLS certs using `mkcert` in `docker/dev-domains/certs/`
-- installs `mkcert` with Homebrew when available
-- adds `/etc/hosts` entry automatically (`sudo` if required)
-
-Start the full stack:
-
-```bash
-make up
-```
-
-Stop the full stack:
-
-```bash
-make down
-```
-
-Notes:
-
-- Reverse proxy is Caddy (`docker/dev-domains/docker-compose.yml` + `docker/dev-domains/Caddyfile`).
-- FE keeps running in Vite dev mode behind HTTPS proxy.
-- FE API base URL is forced to `https://dev.api.appquilar.com` in `make up`.
-- Full guide: `docs/local-dev-domains-https.md`.
 
 ## Feature Development Checklist
 

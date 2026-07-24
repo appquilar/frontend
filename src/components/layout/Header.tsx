@@ -383,7 +383,6 @@ const Header = () => {
                             </Popover>
                         ) : (
                             <Button
-                                ref={desktopCategoriesTriggerRef}
                                 type="button"
                                 variant="outline"
                                 size="sm"
@@ -452,6 +451,7 @@ const Header = () => {
                             </Sheet>
                         ) : (
                             <Button
+                                ref={desktopCategoriesTriggerRef}
                                 type="button"
                                 variant="ghost"
                                 size="sm"

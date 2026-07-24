@@ -13,45 +13,32 @@ interface FeaturedCategoryVM {
     count?: number;
 }
 
-const FALLBACK: FeaturedCategoryVM[] = [
-    {
-        id: '1',
-        name: 'Eléctricas',
-        slug: 'power-tools',
-        imageUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9',
-    },
-    {
-        id: '2',
-        name: 'Manuales',
-        slug: 'hand-tools',
-        imageUrl: 'https://images.unsplash.com/photo-1487252665478-49b61b47f302',
-    },
-    {
-        id: '3',
-        name: 'Jardín',
-        slug: 'gardening',
-        imageUrl: 'https://images.unsplash.com/photo-1469041797191-50ace28483c3',
-    },
-];
-
 /**
  * Componente de cuadrícula de categorías para la página de inicio
  */
 const CategoryGrid = () => {
-    const { featuredCategories, isLoading } = usePublicSiteCategories();
+    const {
+        allCategories = [],
+        featuredCategories = [],
+        isLoading,
+    } = usePublicSiteCategories();
 
     const featuredVM = useMemo<FeaturedCategoryVM[]>(() => {
-        if (!isLoading && featuredCategories.length > 0) {
-            return featuredCategories.map((c) => ({
+        if (isLoading) {
+            return [];
+        }
+
+        const categories = featuredCategories.length > 0
+            ? featuredCategories
+            : allCategories.slice(0, 3);
+
+        return categories.map((c) => ({
                 id: c.id,
                 name: c.name,
                 slug: c.slug,
                 imageUrl: getPublicMediaUrl(c.featuredImageId ?? c.landscapeImageId, "LARGE") ?? "",
             }));
-        }
-
-        return FALLBACK;
-    }, [featuredCategories, isLoading]);
+    }, [allCategories, featuredCategories, isLoading]);
 
     // Precarga (cuando ya tengas urls)
     useEffect(() => {
@@ -104,7 +91,11 @@ const CategoryGrid = () => {
                                         loading="lazy"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-muted animate-pulse" />
+                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/30 via-primary/15 to-muted">
+                                        <span className="text-5xl font-semibold text-primary/45" aria-hidden="true">
+                                            {category.name.slice(0, 1).toUpperCase()}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
 

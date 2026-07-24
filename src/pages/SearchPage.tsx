@@ -142,6 +142,7 @@ const parseDynamicRangeFilters = (searchParams: URLSearchParams): DynamicRangeFi
 };
 
 interface SearchFiltersPanelProps {
+    hasActiveFilters: boolean;
     availableDynamicFilters: AvailableDynamicFilter[];
     categoryTree: CategoryTreeNode[];
     locationError: string | null;
@@ -152,6 +153,7 @@ interface SearchFiltersPanelProps {
     selectedRadius: string;
     showDynamicFilterBlock: boolean;
     onApply: () => Promise<boolean> | boolean;
+    onClear: () => void;
     onRadiusChange: (value: string) => void;
     onToggleCategoryTreeNode: (node: CategoryTreeNode) => void;
     onToggleDynamicOption: (filterCode: string, optionValue: string, checked: boolean) => void;
@@ -161,6 +163,7 @@ interface SearchFiltersPanelProps {
 const SearchFiltersPanel = ({
     availableDynamicFilters,
     categoryTree,
+    hasActiveFilters,
     locationError,
     isLocating,
     selectedCategorySet,
@@ -169,6 +172,7 @@ const SearchFiltersPanel = ({
     selectedRadius,
     showDynamicFilterBlock,
     onApply,
+    onClear,
     onRadiusChange,
     onToggleCategoryTreeNode,
     onToggleDynamicOption,
@@ -223,6 +227,16 @@ const SearchFiltersPanel = ({
             >
                 {isLocating ? "Obteniendo ubicación..." : "Aplicar filtros"}
             </Button>
+            {hasActiveFilters && (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-9 w-full justify-center"
+                    onClick={onClear}
+                >
+                    Limpiar todos los filtros
+                </Button>
+            )}
 
             <div>
                 <h2 className="mb-1 text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -362,6 +376,12 @@ const SearchPage = () => {
     const showDynamicFilterBlock =
         Boolean(dynamicPropertiesQuery.data?.dynamicFiltersEnabled)
         && availableDynamicFilters.length > 0;
+    const hasActiveFilters =
+        queryFromUrl.length > 0
+        || categoriesFromUrl.length > 0
+        || radiusFromUrl !== "any"
+        || Object.keys(dynamicValueFiltersFromUrl).length > 0
+        || Object.keys(dynamicRangeFiltersFromUrl).length > 0;
 
     const products = useMemo(() => {
         return domainProducts.map((product) => ({
@@ -470,7 +490,8 @@ const SearchPage = () => {
                             ? error.message
                             : "No se pudo obtener tu ubicación."
                     );
-                    return false;
+                    nextLatitude = undefined;
+                    nextLongitude = undefined;
                 } finally {
                     setIsLocating(false);
                 }
@@ -488,12 +509,10 @@ const SearchPage = () => {
             nextParams.set("categories", nextCategories.join(","));
         }
 
-        if (
-            nextRadius !== "any" &&
-            nextLatitude !== undefined &&
-            nextLongitude !== undefined
-        ) {
+        if (nextRadius !== "any") {
             nextParams.set("radius", nextRadius);
+        }
+        if (nextLatitude !== undefined && nextLongitude !== undefined) {
             nextParams.set("latitude", String(nextLatitude));
             nextParams.set("longitude", String(nextLongitude));
         }
@@ -520,6 +539,17 @@ const SearchPage = () => {
 
         setParams(nextParams);
         return true;
+    };
+
+    const clearFilters = () => {
+        setInputValue("");
+        setSelectedCategoryIds([]);
+        setSelectedRadius("any");
+        setSelectedDynamicValueFilters({});
+        setSelectedDynamicRangeFilters({});
+        setLocationError(null);
+        setParams(new URLSearchParams());
+        setMobileFiltersOpen(false);
     };
 
     const toggleDynamicOption = (filterCode: string, optionValue: string, checked: boolean) => {
@@ -570,6 +600,7 @@ const SearchPage = () => {
                         <SearchFiltersPanel
                             availableDynamicFilters={availableDynamicFilters}
                             categoryTree={categoryTree}
+                            hasActiveFilters={hasActiveFilters}
                             locationError={locationError}
                             isLocating={isLocating}
                             selectedCategorySet={selectedCategorySet}
@@ -578,6 +609,7 @@ const SearchPage = () => {
                             selectedRadius={selectedRadius}
                             showDynamicFilterBlock={showDynamicFilterBlock}
                             onApply={applyFilters}
+                            onClear={clearFilters}
                             onRadiusChange={setSelectedRadius}
                             onToggleCategoryTreeNode={toggleCategoryTreeNode}
                             onToggleDynamicOption={toggleDynamicOption}
@@ -604,6 +636,7 @@ const SearchPage = () => {
                                         <SearchFiltersPanel
                                             availableDynamicFilters={availableDynamicFilters}
                                             categoryTree={categoryTree}
+                                            hasActiveFilters={hasActiveFilters}
                                             locationError={locationError}
                                             isLocating={isLocating}
                                             selectedCategorySet={selectedCategorySet}
@@ -618,6 +651,7 @@ const SearchPage = () => {
                                                 }
                                                 return applied;
                                             }}
+                                            onClear={clearFilters}
                                             onRadiusChange={setSelectedRadius}
                                             onToggleCategoryTreeNode={toggleCategoryTreeNode}
                                             onToggleDynamicOption={toggleDynamicOption}

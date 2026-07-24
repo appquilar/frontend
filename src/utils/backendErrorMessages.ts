@@ -19,6 +19,8 @@ const KNOWN_BACKEND_MESSAGES: Record<string, string> = {
         "Esta invitación está suspendida. Contacta con un administrador de la empresa.",
     "company.accept_invitation.email_mismatch":
         "El email de la cuenta no coincide con el email invitado.",
+    "company.invitation.already_exists":
+        "Ya existe una invitación para este correo electrónico.",
     "company.accept_invitation.credentials_required":
         "Completa tus datos para aceptar la invitación.",
 };

@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Nuevo color primario */
-    --primary: 23 83% 69%;
+    /* Orange 700: preserves the brand tone and meets WCAG AA with white text. */
+    --primary: 21 90% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 5% 96%;
@@ -65,8 +65,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    /* Nuevo color primario en modo oscuro */
-    --primary: 23 83% 69%;
+    --primary: 21 90% 40%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4% 12%;

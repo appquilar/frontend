@@ -69,7 +69,7 @@ const CategoryPage = () => {
               }
             : {};
 
-    const { data, isLoading, isFetching } = useCategoryWithProductsByText(
+    const { data, isLoading, isFetching, isError } = useCategoryWithProductsByText(
         slug,
         debouncedSearchQuery,
         geoFilters,
@@ -84,7 +84,7 @@ const CategoryPage = () => {
     const dynamicPropertiesQuery = useCategoryDynamicProperties(
         category?.id ? [category.id] : []
     );
-    const notFound = !isLoading && !category;
+    const notFound = isError || (!isLoading && !category);
     const showDynamicFilterBlock =
         Boolean(dynamicPropertiesQuery.data?.dynamicFiltersEnabled)
         && availableDynamicFilters.length > 0;
@@ -355,9 +355,9 @@ const CategoryPage = () => {
             <div className="public-marketplace min-h-screen flex flex-col">
                 <Header />
                 <main className="public-main public-section flex-1 flex flex-col items-center justify-center p-4">
-                    <h1 className="text-2xl font-medium mb-4">Category not found</h1>
+                    <h1 className="text-2xl font-medium mb-4">Categoría no encontrada</h1>
                     <p className="text-muted-foreground">
-                        The category you're looking for doesn't exist.
+                        La categoría que buscas no existe o ya no está disponible.
                     </p>
                 </main>
                 <Footer />

@@ -17,6 +17,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useRecaptchaToken } from "@/application/hooks/useCaptcha";
+import { ApiError } from "@/infrastructure/http/ApiClient";
 
 const schema = z.object({
     firstName: z.string().min(2),
@@ -72,6 +73,18 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
                     setSubmitError("No se pudo validar reCAPTCHA. Vuelve a intentarlo.");
                     return;
                 }
+
+                if (emailError) {
+                    return;
+                }
+            }
+
+            if (error instanceof ApiError && (error.status === 400 || error.status === 409)) {
+                form.setError("email", {
+                    type: "server",
+                    message: "Ya existe una cuenta con este correo electrónico.",
+                });
+                return;
             }
 
             setSubmitError(

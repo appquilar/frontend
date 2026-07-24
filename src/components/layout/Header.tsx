@@ -38,6 +38,7 @@ const Header = () => {
     const [searchValue, setSearchValue] = useState("");
     const headerRef = useRef<HTMLElement | null>(null);
     const desktopTopPanelRef = useRef<HTMLDivElement | null>(null);
+    const desktopCategoriesTriggerRef = useRef<HTMLButtonElement | null>(null);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -86,14 +87,16 @@ const Header = () => {
             if (!target) return;
             if (desktopTopPanelRef.current?.contains(target)) return;
 
-            const trigger = document.querySelector("[data-desktop-categories-trigger]");
-            if (trigger?.contains(target)) return;
+            if (desktopCategoriesTriggerRef.current?.contains(target)) return;
 
             setDesktopCategoriesOpen(false);
         };
 
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === "Escape") setDesktopCategoriesOpen(false);
+            if (event.key === "Escape") {
+                setDesktopCategoriesOpen(false);
+                requestAnimationFrame(() => desktopCategoriesTriggerRef.current?.focus());
+            }
         };
 
         document.addEventListener("mousedown", handlePointerDown);
@@ -184,7 +187,13 @@ const Header = () => {
                     <div className="mx-auto relative flex h-[70px] w-full max-w-[1320px] items-center px-4 sm:px-6">
                         <Sheet open={mobileCategoriesOpen} onOpenChange={setMobileCategoriesOpen}>
                             <SheetTrigger asChild>
-                                <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-full">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Abrir categorías"
+                                    className="h-10 w-10 rounded-full"
+                                >
                                     <Menu size={20} />
                                 </Button>
                             </SheetTrigger>
@@ -233,6 +242,7 @@ const Header = () => {
                                         <Button
                                             variant="outline"
                                             size="icon"
+                                            aria-label="Abrir menú de usuario"
                                             className="h-10 w-10 rounded-full border-border/80 text-foreground"
                                         >
                                             <User size={16} />
@@ -318,6 +328,12 @@ const Header = () => {
                             <input
                                 value={searchValue}
                                 onChange={(event) => setSearchValue(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        handleSearchSubmit(event);
+                                    }
+                                }}
+                                aria-label="Buscar productos"
                                 placeholder="Busca productos para alquilar"
                                 className="h-11 w-full rounded-full border border-border/80 bg-background pl-11 pr-4 text-sm text-foreground transition-colors focus:border-primary/50 focus:outline-none"
                             />
@@ -367,6 +383,7 @@ const Header = () => {
                             </Popover>
                         ) : (
                             <Button
+                                ref={desktopCategoriesTriggerRef}
                                 type="button"
                                 variant="outline"
                                 size="sm"
@@ -479,7 +496,10 @@ const Header = () => {
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setDesktopCategoriesOpen(false)}
+                                        onClick={() => {
+                                            setDesktopCategoriesOpen(false);
+                                            requestAnimationFrame(() => desktopCategoriesTriggerRef.current?.focus());
+                                        }}
                                         className="h-8 gap-1 rounded-md px-2 text-xs text-muted-foreground hover:text-foreground"
                                     >
                                         <X size={14} />

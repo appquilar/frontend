@@ -63,6 +63,10 @@ vi.mock("@/application/hooks/useBilling", () => ({
     isPending: false,
     mutateAsync: vi.fn(),
   }),
+  useCreateCustomerPortalSession: () => ({
+    isPending: false,
+    mutateAsync: vi.fn(),
+  }),
 }));
 
 vi.mock("@/hooks/useUserProCheckout", () => ({
@@ -108,7 +112,7 @@ describe("DashboardNavigationContent", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: /Convertir a User Pro/i })
+      screen.getByRole("button", { name: /Hazte Pro/i })
     ).toBeInTheDocument();
   });
 });

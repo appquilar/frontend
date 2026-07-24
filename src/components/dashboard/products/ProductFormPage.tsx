@@ -122,12 +122,8 @@ const ProductFormPage = () => {
                     : fallbackCreatedProductId;
 
                 if (createdProductId) {
-                    setLastSavedProduct({
-                        id: createdProductId,
-                        slug: createdProduct?.slug || updatedProduct.slug || createdProductId,
-                        publicationStatus: createdProduct?.publicationStatus ?? updatedProduct.publicationStatus ?? 'draft',
-                    });
-                    navigate(`/dashboard/products/${encodeURIComponent(createdProductId)}`, { replace: true });
+                    toast.success("Producto guardado correctamente");
+                    navigate('/dashboard/products', { replace: true });
                 }
             } else {
                 const savedProduct = await updateProduct({

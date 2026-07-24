@@ -120,17 +120,17 @@ describe("AuthModal", () => {
     expect(sessionStorage.getItem("auth:initialTab")).toBeNull();
   });
 
-  it("closes after signup success and returns to login with a message after password recovery", async () => {
+  it("returns to login after signup and shows the recovery confirmation", async () => {
     const onClose = vi.fn();
     renderAuthModal(onClose);
 
     await userEvent.click(screen.getByRole("button", { name: "Registrarse" }));
     await userEvent.click(screen.getByRole("button", { name: "Completar registro" }));
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Iniciar sesión" })
+    expect(screen.getByTestId("signin-form")).toHaveTextContent(
+      "signin:Cuenta creada correctamente. Ya puedes iniciar sesión."
     );
+    expect(onClose).not.toHaveBeenCalled();
+
     await userEvent.click(
       screen.getByRole("button", { name: "¿Has olvidado tu contraseña?" })
     );

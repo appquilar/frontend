@@ -402,6 +402,12 @@ const PublicCompanyPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        variant="outline"
+                        onClick={() => openSignIn("Inicia sesión para contactar con este proveedor.")}
+                      >
+                        Contactar proveedor
+                      </Button>
                       <Button onClick={() => openSignUp("Crea tu cuenta para ver la ubicación exacta del proveedor.")}>
                         Crear cuenta gratis
                       </Button>

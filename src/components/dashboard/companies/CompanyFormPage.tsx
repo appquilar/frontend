@@ -35,6 +35,25 @@ import AccessRestricted from "@/components/dashboard/user-management/AccessRestr
 const DEFAULT_PHONE_COUNTRY_CODE = "ES";
 const DEFAULT_PHONE_PREFIX = "+34";
 
+const buildAddressFingerprint = (values: {
+    street?: string | null;
+    street2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    country?: string | null;
+    postalCode?: string | null;
+}): string =>
+    [
+        values.street,
+        values.street2,
+        values.city,
+        values.state,
+        values.country,
+        values.postalCode,
+    ]
+        .map((value) => (value ?? "").trim().toLocaleLowerCase())
+        .join("|");
+
 const companyProfileSchema = z.object({
     name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
     slug: z.string().min(2, { message: "El slug es obligatorio" }),
@@ -265,6 +284,21 @@ const CompanyFormPage = () => {
         const hasPhoneNumber = normalizedPhoneNumber.length > 0;
         const previousProfilePictureId = profileQuery.data.profilePictureId ?? null;
         const previousHeaderImageId = profileQuery.data.headerImageId ?? null;
+        const addressChanged =
+            buildAddressFingerprint(data)
+            !== buildAddressFingerprint(profileQuery.data.address ?? {});
+        const locationUnchanged =
+            data.latitude === (profileQuery.data.location?.latitude ?? 40.4168)
+            && data.longitude === (profileQuery.data.location?.longitude ?? -3.7038);
+
+        if (addressChanged && locationUnchanged) {
+            const message =
+                "La dirección ha cambiado. Selecciónala en el buscador o mueve el marcador para actualizar las coordenadas.";
+            form.setError("latitude", { type: "manual", message });
+            form.setError("longitude", { type: "manual", message });
+            toast.error(message);
+            return;
+        }
 
         try {
             await updateMutation.mutateAsync({
@@ -381,7 +415,12 @@ const CompanyFormPage = () => {
                                                     <FormItem>
                                                         <FormLabel>Nombre</FormLabel>
                                                         <FormControl>
-                                                            <Input {...field} placeholder="Nombre de empresa" />
+                                                            <Input
+                                                                {...field}
+                                                                required
+                                                                minLength={2}
+                                                                placeholder="Nombre de empresa"
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>

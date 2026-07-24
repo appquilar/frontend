@@ -60,7 +60,11 @@ const CategoriesPage = () => {
                                                 loading="lazy"
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-muted animate-pulse" />
+                                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/30 via-primary/15 to-muted">
+                                                <span className="text-5xl font-semibold text-primary/45" aria-hidden="true">
+                                                    {category.name.slice(0, 1).toUpperCase()}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
 

@@ -75,6 +75,17 @@ const CompanyInfo = ({ company, locationLabel, onContact, isLoggedIn, canRequest
         </p>
       )}
 
+      <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Señales de confianza de la empresa">
+        <div className="rounded-md border border-border/70 bg-background/70 px-3 py-2">
+          <p className="text-lg font-semibold text-foreground">0</p>
+          <p className="text-xs text-muted-foreground">valoraciones disponibles</p>
+        </div>
+        <div className="rounded-md border border-border/70 bg-background/70 px-3 py-2">
+          <p className="text-lg font-semibold text-foreground">1+</p>
+          <p className="text-xs text-muted-foreground">productos publicados</p>
+        </div>
+      </div>
+
       <div className="border-t border-border mt-4 pt-4">
         {companyPath && (
           <Button asChild variant="outline" className="w-full">

@@ -52,7 +52,13 @@ const ForgotPasswordForm = ({ onBack, onSuccess }: ForgotPasswordFormProps) => {
                     <FormField
                         control={form.control}
                         name="email"
-                        rules={{ required: "El email es obligatorio" }}
+                        rules={{
+                            required: "El email es obligatorio",
+                            pattern: {
+                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                message: "Introduce un correo electrónico válido",
+                            },
+                        }}
                         render={({ field }) => (
                             <FormItem className="space-y-1.5">
                                 <FormLabel className="text-[12px] font-medium text-muted-foreground">

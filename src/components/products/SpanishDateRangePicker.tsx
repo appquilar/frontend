@@ -90,11 +90,11 @@ const SpanishDateRangePicker = ({
     }
 
     onEndDateChange(toIsoDate(range.to));
-    setIsCalendarOpen(false);
+    requestAnimationFrame(() => setIsCalendarOpen(false));
   };
 
   return (
-    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+    <Popover modal open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -168,6 +168,18 @@ const SpanishDateRangePicker = ({
             day_today: 'bg-slate-100 text-slate-900',
           }}
         />
+        <div className="flex justify-end gap-2 border-t border-border px-4 py-3">
+          <Button type="button" variant="ghost" onClick={() => setIsCalendarOpen(false)}>
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setIsCalendarOpen(false)}
+            disabled={!startDate || !endDate}
+          >
+            Aplicar fechas
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -660,6 +660,7 @@ export class ApiProductRepository implements ProductRepository {
             description: data.description,
             is_rental_enabled: true,
             inventory_mode: data.inventoryMode ?? 'unmanaged',
+            is_inventory_enabled: (data.inventoryMode ?? 'unmanaged') !== 'unmanaged',
             company_id: product.company?.id || data.companyId,
             category_id: product.category?.id || data.categoryId,
             image_ids: imageIds,

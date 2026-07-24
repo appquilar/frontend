@@ -51,12 +51,7 @@ describe("AuthModal signup recovery", () => {
     sessionStorage.clear();
   });
 
-  it("creates the user, retries a lost autologin response, and leaves a clean session", async () => {
-    const token = makeJwt({
-      sub: "user-1",
-      roles: ["ROLE_USER"],
-      exp: Math.floor(Date.now() / 1000) + 3600,
-    });
+  it("creates the user and returns to login without starting a session", async () => {
     let loginAttempts = 0;
 
     server.use(
@@ -79,41 +74,9 @@ describe("AuthModal signup recovery", () => {
 
         return new HttpResponse(null, { status: 201 });
       }),
-      http.post(`${apiBaseUrl}/api/auth/login`, async ({ request }) => {
+      http.post(`${apiBaseUrl}/api/auth/login`, async () => {
         loginAttempts += 1;
-        const body = await request.json();
-
-        expect(body).toEqual({
-          email: "victor@appquilar.com",
-          password: "Password123!",
-        });
-
-        if (loginAttempts === 1) {
-          return HttpResponse.error();
-        }
-
-        return HttpResponse.json({
-          success: true,
-          data: { token },
-        });
-      }),
-      http.get(`${apiBaseUrl}/api/me`, ({ request }) => {
-        expect(request.headers.get("authorization")).toBe(`Bearer ${token}`);
-
-        return HttpResponse.json({
-          success: true,
-          data: {
-            id: "user-1",
-            first_name: "Victor",
-            last_name: "Saavedra",
-            email: "victor@appquilar.com",
-            roles: ["ROLE_USER"],
-            address: null,
-            location: null,
-            plan_type: "explorer",
-            subscription_status: "active",
-          },
-        });
+        return HttpResponse.error();
       })
     );
 
@@ -127,12 +90,12 @@ describe("AuthModal signup recovery", () => {
     await user.click(screen.getByRole("button", { name: "Crear cuenta" }));
 
     await waitFor(() => {
-      expect(loginAttempts).toBe(2);
-      expect(localStorage.getItem("auth_token")).toBe(token);
-      expect(screen.getByTestId("auth-email")).toHaveTextContent("victor@appquilar.com");
-      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Cuenta creada correctamente. Ya puedes iniciar sesión.")).toBeInTheDocument();
     });
 
-    expect(screen.queryByText("Failed to fetch")).not.toBeInTheDocument();
+    expect(loginAttempts).toBe(0);
+    expect(localStorage.getItem("auth_token")).toBeNull();
+    expect(screen.getByTestId("auth-email")).toHaveTextContent("none");
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

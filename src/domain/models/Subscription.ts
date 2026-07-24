@@ -131,7 +131,7 @@ export const getCompanyPlanProductLimit = (context: CompanyContext | null | unde
         case "starter":
             return 10;
         case "pro":
-            return 10;
+            return 50;
         default:
             return null;
     }

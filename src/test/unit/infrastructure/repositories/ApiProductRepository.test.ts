@@ -375,6 +375,7 @@ describe("ApiProductRepository", () => {
                 description: "Taladro percutor",
                 is_rental_enabled: true,
                 inventory_mode: "managed_serialized",
+                is_inventory_enabled: true,
                 company_id: "company-1",
                 category_id: "category-1",
                 image_ids: ["image-1"],

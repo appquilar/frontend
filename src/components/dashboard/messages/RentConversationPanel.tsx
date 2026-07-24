@@ -113,8 +113,8 @@ const RentConversationPanel = ({
       return;
     }
 
-    setOptimisticMessages((previous) =>
-      previous.filter((optimistic) => {
+    setOptimisticMessages((previous) => {
+      const next = previous.filter((optimistic) => {
         if (!optimistic.isOptimistic || optimistic.deliveryStatus !== 'sent') {
           return true;
         }
@@ -133,9 +133,11 @@ const RentConversationPanel = ({
         });
 
         return !match;
-      })
-    );
-  }, [messages, optimisticMessages.length]);
+      });
+
+      return next.length === previous.length ? previous : next;
+    });
+  }, [messages, optimisticMessages]);
 
   const syncFormContent = () => {
     const nextValue = editorRef.current?.innerText ?? '';

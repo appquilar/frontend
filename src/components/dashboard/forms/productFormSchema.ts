@@ -220,7 +220,7 @@ export const mapProductToFormValues = (product: Product): ProductFormValues => {
         publicationStatus: product.publicationStatus || 'draft',
         quantity: product.inventorySummary?.totalQuantity ?? product.quantity ?? 1,
         isRentalEnabled: true,
-        isInventoryEnabled: product.inventorySummary?.isInventoryEnabled ?? product.isInventoryEnabled ?? true,
+        isInventoryEnabled: product.inventorySummary?.isInventoryEnabled ?? product.isInventoryEnabled ?? false,
         inventoryMode: product.inventorySummary?.inventoryMode
             ?? product.inventoryMode
             ?? ((product.inventorySummary?.isInventoryEnabled ?? product.isInventoryEnabled) ? 'managed_serialized' : 'unmanaged'),

@@ -60,7 +60,7 @@ const buildRenterRental = (): Rental => ({
   depositReturned: { amount: 0, currency: "EUR" },
   status: "proposal_pending_renter",
   isLead: true,
-  proposalValidUntil: new Date(2026, 6, 20, 23, 59, 59),
+  proposalValidUntil: new Date(2026, 6, 30, 23, 59, 59),
   ownerProposalAccepted: true,
   renterProposalAccepted: false,
 });

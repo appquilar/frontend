@@ -203,7 +203,9 @@ export class ApiBlogRepository implements BlogRepository {
     }
 
     private mapListResponse(raw: unknown): BlogPostListResult {
-        const payload = this.unwrapPayload(raw);
+        const rootPayload = this.isRecord(raw) ? raw : this.unwrapPayload(raw);
+        const nestedPayload = this.pick(rootPayload, 'data');
+        const payload = this.isRecord(nestedPayload) ? nestedPayload : rootPayload;
         const payloadData = this.pick(payload, 'data');
 
         const items = Array.isArray(payloadData)

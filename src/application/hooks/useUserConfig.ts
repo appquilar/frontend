@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
     addressFormSchema,
     AddressFormValues,
@@ -21,10 +21,8 @@ export const useUserConfig = () => {
         currentUser,
         refreshCurrentUser,
         changePassword,
-        logout,
     } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("profile");
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -201,14 +199,7 @@ export const useUserConfig = () => {
         try {
             await changePassword(data.currentPassword, data.newPassword);
             passwordForm.reset();
-            await logout();
-
-            sessionStorage.setItem(
-                "auth:postChangePasswordMessage",
-                "Has cambiado tu contraseña, por favor, vuelve a iniciar sesión.",
-            );
-
-            navigate("/", { replace: true });
+            toast.success("Contraseña actualizada correctamente");
         } catch (error) {
             console.error("Error changing password:", error);
             toast.error(

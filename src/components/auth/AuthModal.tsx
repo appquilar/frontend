@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogHeader,
@@ -121,15 +120,14 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                                 </p>
                             </div>
 
-                            <DialogClose asChild>
-                                <button
-                                    type="button"
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/70 bg-white text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                    aria-label="Cerrar"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </DialogClose>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/70 bg-white text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                aria-label="Cerrar"
+                            >
+                                <X size={16} />
+                            </button>
                         </div>
 
                         <div className="px-5 pb-1">
@@ -177,7 +175,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
                         {activeTab === "signup" && (
                             <SignUpForm
-                                onSuccess={handleAuthSuccess}
+                                onSuccess={() => {
+                                    setActiveTab("signin");
+                                    setInfoMessage(
+                                        "Cuenta creada correctamente. Ya puedes iniciar sesión.",
+                                    );
+                                }}
                             />
                         )}
 

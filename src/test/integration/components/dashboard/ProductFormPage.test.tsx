@@ -175,13 +175,9 @@ describe("ProductFormPage", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText("products-list")).not.toBeInTheDocument();
+      expect(screen.getByText("products-list")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("location-display")).toHaveTextContent("/dashboard/products/product-1");
-
-    const draftLink = await screen.findByRole("link", { name: "Ver borrador" });
-    expect(draftLink).toHaveAttribute("href", "/producto/castillo-inflable");
-    expect(draftLink).toHaveAttribute("target", "_blank");
+    expect(screen.getByTestId("location-display")).toHaveTextContent("/dashboard/products");
   });
 
   it("removes stale company scope when creating a personal product", async () => {

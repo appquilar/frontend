@@ -61,7 +61,6 @@ export const useCategoryWithProductsByText = (
             normalizedPropertyRanges,
         ],
         enabled: Boolean(slug),
-        placeholderData: (previousData) => previousData,
         queryFn: async () => {
             const category = await compositionRoot.categoryService.getBySlug(slug!);
             const searchResult = await compositionRoot.productService.search({

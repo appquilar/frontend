@@ -187,7 +187,14 @@ const ContactModal = ({
   const dateRangeError = form.formState.errors.startDate?.message || form.formState.errors.endDate?.message;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-[500px]">
         <DialogHeader className="shrink-0">
           <DialogTitle>Solicitar alquiler</DialogTitle>

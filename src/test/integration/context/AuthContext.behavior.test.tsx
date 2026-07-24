@@ -287,23 +287,11 @@ describe("AuthContext behavior", () => {
     });
   });
 
-  it("keeps a product signup authenticated when registration response is lost after account creation", async () => {
+  it("does not attempt autologin when registration fails", async () => {
     const user = userEvent.setup();
-    const session = {
-      token: "new-jwt-token",
-      userId: "user-2",
-      roles: [UserRole.REGULAR_USER],
-      expiresAt: null,
-    };
-
     mockAuthService.getCurrentSessionSync.mockReturnValue(null);
     mockAuthService.getCurrentSession.mockResolvedValue(null);
     mockAuthService.register.mockRejectedValueOnce(new TypeError("Failed to fetch"));
-    mockAuthService.login.mockImplementationOnce(async () => {
-      mockAuthService.getCurrentSessionSync.mockReturnValue(session);
-      mockAuthService.getCurrentSession.mockResolvedValue(session);
-      throw new TypeError("Failed to fetch");
-    });
 
     renderAuthProvider();
 
@@ -314,43 +302,17 @@ describe("AuthContext behavior", () => {
     await user.click(screen.getByRole("button", { name: "register" }));
 
     await waitFor(() => {
-      expect(mockAuthService.login).toHaveBeenCalledWith({
-        email: "victor@appquilar.com",
-        password: "Password123!",
-      });
-      expect(screen.getByTestId("email")).toHaveTextContent("victor@appquilar.com");
-      expect(screen.getByTestId("last-error")).toHaveTextContent("none");
+      expect(mockAuthService.login).not.toHaveBeenCalled();
+      expect(screen.getByTestId("email")).toHaveTextContent("none");
+      expect(screen.getByTestId("last-error")).toHaveTextContent("Failed to fetch");
     });
   });
 
-  it("retries autologin when signup succeeds but the first login response is lost", async () => {
+  it("keeps registration and login as separate flows", async () => {
     const user = userEvent.setup();
-    const session = {
-      token: "new-jwt-token",
-      userId: "user-2",
-      roles: [UserRole.REGULAR_USER],
-      expiresAt: null,
-    };
-    const registeredUser = {
-      id: "user-2",
-      firstName: "Victor",
-      lastName: "Saavedra",
-      email: "victor@appquilar.com",
-      roles: [UserRole.REGULAR_USER],
-      address: null,
-      location: null,
-    };
-
     mockAuthService.getCurrentSessionSync.mockReturnValue(null);
     mockAuthService.getCurrentSession.mockResolvedValue(null);
     mockAuthService.register.mockResolvedValueOnce(undefined);
-    mockAuthService.login
-      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
-      .mockImplementationOnce(async () => {
-        mockAuthService.getCurrentSessionSync.mockReturnValue(session);
-        mockAuthService.getCurrentSession.mockResolvedValue(session);
-        return registeredUser;
-      });
 
     renderAuthProvider();
 
@@ -361,8 +323,9 @@ describe("AuthContext behavior", () => {
     await user.click(screen.getByRole("button", { name: "register" }));
 
     await waitFor(() => {
-      expect(mockAuthService.login).toHaveBeenCalledTimes(2);
-      expect(screen.getByTestId("email")).toHaveTextContent("victor@appquilar.com");
+      expect(mockAuthService.register).toHaveBeenCalledTimes(1);
+      expect(mockAuthService.login).not.toHaveBeenCalled();
+      expect(screen.getByTestId("email")).toHaveTextContent("none");
       expect(screen.getByTestId("last-error")).toHaveTextContent("none");
     });
   });

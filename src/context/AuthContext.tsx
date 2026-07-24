@@ -25,7 +25,7 @@ import {
     extractBackendErrorStatus,
 } from "@/utils/backendError";
 import { useCurrentUser } from "@/application/hooks/useCurrentUser";
-import { createUser, isPlatformAdminUser, isRegularUser } from "@/domain/models/User";
+import { isPlatformAdminUser, isRegularUser } from "@/domain/models/User";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -82,20 +82,6 @@ const resolveAuthBlockMessage = (error: unknown): string | null => {
 const isFetchNetworkError = (error: unknown): boolean =>
     error instanceof Error &&
     /Failed to fetch|fetch failed|Load failed|NetworkError/i.test(error.message);
-
-const createRegisteredUserFallback = (
-    data: RegisterUserData,
-    session: AuthSession,
-): User =>
-    createUser({
-        id: session.userId ?? "",
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        roles: session.roles.length > 0 ? session.roles : [UserRole.REGULAR_USER],
-        planType: "explorer",
-        subscriptionStatus: "active",
-    });
 
 const shouldPreserveCurrentUserAfterRefreshError = (error: unknown): boolean => {
     const status = extractBackendErrorStatus(error);
@@ -218,7 +204,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     //
-    // SIGNUP + autologin
+    // SIGNUP
     //
     const register = async (
         firstName: string,
@@ -235,51 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             captchaToken,
         };
 
-        const previousToken = authService.getCurrentSessionSync()?.token ?? null;
-
-        const loginRegisteredUser = async (registrationError?: unknown) => {
-            let lastLoginError: unknown = null;
-
-            for (let attempt = 0; attempt < 2; attempt += 1) {
-                try {
-                    await login(email, password);
-                    return;
-                } catch (loginError) {
-                    lastLoginError = loginError;
-                    const session = authService.getCurrentSessionSync();
-
-                    if (
-                        session &&
-                        hasAuthenticatedSession(session) &&
-                        session.token !== previousToken
-                    ) {
-                        setAuthBlockMessage(null);
-                        resetQueryCacheForIdentity(createRegisteredUserFallback(data, session));
-                        invalidatePublicSessionQueries();
-                        return;
-                    }
-
-                    if (!isFetchNetworkError(loginError)) {
-                        break;
-                    }
-                }
-            }
-
-            throw lastLoginError ?? registrationError;
-        };
-
-        try {
-            await authService.register(data);
-        } catch (error) {
-            if (!isFetchNetworkError(error)) {
-                throw error;
-            }
-
-            await loginRegisteredUser(error);
-            return;
-        }
-
-        await loginRegisteredUser();
+        await authService.register(data);
     };
 
     //

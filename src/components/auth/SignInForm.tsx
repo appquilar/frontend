@@ -30,6 +30,7 @@ type SignInFormValues = {
 };
 
 type ErrorPayload = {
+    payload?: unknown;
     error?: unknown;
     errors?: unknown;
     message?: unknown;
@@ -51,6 +52,7 @@ const isInvalidCredentialsError = (error: unknown): boolean => {
     if (!error) return false;
 
     const typedError = error as ErrorPayload;
+    const directPayload = typedError.payload as ErrorPayload | undefined;
 
     // Caso mensaje en el propio error
     if (
@@ -62,6 +64,9 @@ const isInvalidCredentialsError = (error: unknown): boolean => {
 
     // Caso payload directo { success: false, error: [...] }
     if (hasErrorCode(typedError.error, "login.invalid")) {
+        return true;
+    }
+    if (hasErrorCode(directPayload?.error, "login.invalid")) {
         return true;
     }
 

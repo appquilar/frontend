@@ -502,16 +502,14 @@ const BlogEditorPage = () => {
                         </CardContent>
                     </Card>
 
-                    {isCreateMode && (
-                        <div className="flex items-center justify-end gap-2">
-                            <Link to="/dashboard/blog">
-                                <Button type="button" variant="outline">Cancelar</Button>
-                            </Link>
-                            <Button type="submit" disabled={canSubmit || categories.length === 0}>
-                                Crear post
-                            </Button>
-                        </div>
-                    )}
+                    <div className="flex items-center justify-end gap-2">
+                        <Link to="/dashboard/blog">
+                            <Button type="button" variant="outline">Cancelar</Button>
+                        </Link>
+                        <Button type="submit" disabled={canSubmit || categories.length === 0}>
+                            {isCreateMode ? "Crear post" : "Guardar cambios"}
+                        </Button>
+                    </div>
                 </form>
 
                 <div className="space-y-6">

@@ -56,6 +56,9 @@ const DashboardNavigationContent = ({
     );
     const isUserPro = effectiveUserPlan === "user_pro";
     const canUpgradeToUserPro = isRegularUser && !isAdmin && !hasCompany && !isUserPro;
+    const canUpgradeCurrentPlan =
+        canUpgradeToUserPro ||
+        (hasCompany && currentUser?.companyContext?.planType !== "enterprise");
 
     const handleTabChange = (href: string) => {
         const tabName =
@@ -120,7 +123,7 @@ const DashboardNavigationContent = ({
                 </div>
             )}
 
-            {canUpgradeToUserPro && (
+            {canUpgradeCurrentPlan && (
                 <div className="px-2 mb-2">
                     <UpgradeToProLink
                         onAfterNavigate={() => {

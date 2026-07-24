@@ -24,7 +24,7 @@ const UpgradeLink = ({ onAfterNavigate }: UpgradeLinkProps) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-orange-600">Actualizar a Empresa</p>
+          <p className="text-sm font-semibold text-orange-600">Hazte empresa</p>
           <p className="text-xs text-zinc-600">
             Completa la configuración de empresa para alquilar como tienda.
           </p>

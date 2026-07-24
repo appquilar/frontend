@@ -6,11 +6,13 @@ const {
   mockUseAuth,
   mockLogin,
   mockRegister,
+  mockRequestPasswordReset,
   mockExecuteCaptcha,
 } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
   mockLogin: vi.fn(),
   mockRegister: vi.fn(),
+  mockRequestPasswordReset: vi.fn(),
   mockExecuteCaptcha: vi.fn(),
 }));
 
@@ -28,21 +30,37 @@ vi.mock("@/application/hooks/useCaptcha", () => ({
 
 import SignInForm from "@/components/auth/SignInForm";
 import SignUpForm from "@/components/auth/SignUpForm";
+import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 
 describe("auth forms", () => {
   beforeEach(() => {
     mockUseAuth.mockReset();
     mockLogin.mockReset();
     mockRegister.mockReset();
+    mockRequestPasswordReset.mockReset();
     mockExecuteCaptcha.mockReset();
 
     mockUseAuth.mockReturnValue({
       login: mockLogin,
       register: mockRegister,
+      requestPasswordReset: mockRequestPasswordReset,
     });
     mockLogin.mockResolvedValue(undefined);
     mockRegister.mockResolvedValue(undefined);
+    mockRequestPasswordReset.mockResolvedValue(undefined);
     mockExecuteCaptcha.mockResolvedValue("captcha-token");
+  });
+
+  it("shows the application validation message for an invalid recovery email", async () => {
+    const user = userEvent.setup();
+
+    render(<ForgotPasswordForm onBack={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("Correo electrónico"), "correo-invalido");
+    await user.click(screen.getByRole("button", { name: "Enviar enlace de recuperación" }));
+
+    expect(await screen.findByText("Introduce un correo electrónico válido")).toBeInTheDocument();
+    expect(mockRequestPasswordReset).not.toHaveBeenCalled();
   });
 
   it("shows invalid-credentials errors and clears them when recovery starts", async () => {

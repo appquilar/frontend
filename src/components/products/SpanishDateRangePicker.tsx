@@ -90,7 +90,7 @@ const SpanishDateRangePicker = ({
     }
 
     onEndDateChange(toIsoDate(range.to));
-    requestAnimationFrame(() => setIsCalendarOpen(false));
+    setIsCalendarOpen(false);
   };
 
   return (
@@ -138,7 +138,10 @@ const SpanishDateRangePicker = ({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto max-w-[92vw] p-0" align="start">
+      <PopoverContent
+        className="rental-date-range-popover w-auto max-w-[92vw] p-0"
+        align="start"
+      >
         <div className="border-b border-border px-4 py-3">
           <p className="text-sm font-semibold text-foreground">Selecciona las fechas</p>
           <p className="text-xs text-muted-foreground">

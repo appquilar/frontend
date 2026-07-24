@@ -48,7 +48,7 @@ const ForgotPasswordForm = ({ onBack, onSuccess }: ForgotPasswordFormProps) => {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <FormField
                         control={form.control}
                         name="email"
@@ -64,20 +64,20 @@ const ForgotPasswordForm = ({ onBack, onSuccess }: ForgotPasswordFormProps) => {
                                 <FormLabel className="text-[12px] font-medium text-muted-foreground">
                                     Correo electrónico
                                 </FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <Mail
-                                            size={16}
-                                            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                        />
+                                <div className="relative">
+                                    <Mail
+                                        size={16}
+                                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                    />
+                                    <FormControl>
                                         <Input
                                             type="email"
                                             placeholder="tu@email.com"
                                             className="h-11 rounded-lg border-border/80 pl-10"
                                             {...field}
                                         />
-                                    </div>
-                                </FormControl>
+                                    </FormControl>
+                                </div>
                                 <FormMessage className="text-xs" />
                             </FormItem>
                         )}

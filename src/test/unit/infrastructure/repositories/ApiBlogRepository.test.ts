@@ -11,6 +11,32 @@ const createApiClientMock = () => ({
 });
 
 describe("ApiBlogRepository", () => {
+  it("preserves pagination metadata from the flat public API response", async () => {
+    const apiClient = createApiClientMock();
+    apiClient.get.mockResolvedValue({
+      total: 12,
+      page: 1,
+      data: [
+        {
+          post_id: "post-1",
+          title: "Public post",
+          slug: "public-post",
+          excerpt: "Resumen",
+          status: "published",
+          created_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+    });
+
+    const repository = new ApiBlogRepository(apiClient as never, () => null);
+
+    const result = await repository.listPublicPosts({ page: 1, perPage: 10 });
+
+    expect(result.total).toBe(12);
+    expect(result.page).toBe(1);
+    expect(result.data).toHaveLength(1);
+  });
+
   it("maps public post lists with query params and google preview fallbacks", async () => {
     const apiClient = createApiClientMock();
     apiClient.get.mockResolvedValue({

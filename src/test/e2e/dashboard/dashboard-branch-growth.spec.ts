@@ -120,7 +120,7 @@ test.describe("Dashboard branch growth", () => {
     });
 
     await page.goto("/categoria/fantasma");
-    await expect(page.getByRole("heading", { name: "Category not found" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "Categoría no encontrada" })).toBeVisible({
       timeout: 10_000,
     });
 

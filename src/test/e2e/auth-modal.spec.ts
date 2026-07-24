@@ -110,7 +110,7 @@ test("login surfaces invalid credentials, forgot-password returns with an info b
   await expect(page.locator("[data-trigger-login]:visible")).toBeVisible();
 });
 
-test("register shows server-side validation errors and then starts an authenticated session", async ({
+test("register shows server-side validation errors and then returns to login", async ({
   page,
 }) => {
   let registerAttempts = 0;
@@ -189,6 +189,11 @@ test("register shows server-side validation errors and then starts an authentica
   await modal.getByPlaceholder("••••••••").fill("AnotherPass1!");
   await modal.getByRole("button", { name: "Crear cuenta" }).click();
 
-  await expect(modal).toBeHidden();
-  await expect(page.getByRole("button", { name: /Hola Nuevo Usuario/i })).toBeVisible();
+  await expect(modal).toBeVisible();
+  await expect(
+    modal.getByText("Cuenta creada correctamente. Ya puedes iniciar sesión.")
+  ).toBeVisible();
+  await expect(
+    modal.locator("form").getByRole("button", { name: "Iniciar sesión" })
+  ).toBeVisible();
 });

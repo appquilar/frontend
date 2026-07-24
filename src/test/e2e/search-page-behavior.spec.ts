@@ -120,14 +120,14 @@ test("search page mobile filters apply nested categories and dynamic filters", a
 
   await page.goto("/buscar");
 
-  await page.getByRole("button", { name: "Filtros" }).click();
+  await page.getByRole("button", { name: "Filtros", exact: true }).click();
   await page.getByRole("button", { name: "Herramientas" }).click();
   await page.getByRole("button", { name: "Aplicar filtros" }).click();
 
   await expect(page).toHaveURL(/categories=cat-1%2Ccat-2%2Ccat-3/);
   await expect(page.getByText("Furgoneta de carga")).toBeVisible();
 
-  await page.getByRole("button", { name: "Filtros" }).click();
+  await page.getByRole("button", { name: "Filtros", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Propiedades" })).toBeVisible();
 
   const filtersDialog = page.locator("[role='dialog']");

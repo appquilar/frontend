@@ -275,8 +275,13 @@ test.describe("Dashboard Coverage Auth + Subscription Matrix", () => {
     await expect(modal.getByText("Registro temporalmente deshabilitado")).toBeVisible();
 
     await modal.getByRole("button", { name: "Crear cuenta" }).click();
-    await expect(modal).toBeHidden();
-    await expect(page.getByRole("button", { name: /Hola Auth Coverage/i })).toBeVisible();
+    await expect(modal).toBeVisible();
+    await expect(
+      modal.getByText("Cuenta creada correctamente. Ya puedes iniciar sesión.")
+    ).toBeVisible();
+    await expect(
+      modal.locator("form").getByRole("button", { name: "Iniciar sesión" })
+    ).toBeVisible();
   });
 
   test("reset password covers mismatch, backend error and success branches", async ({ page }, testInfo) => {

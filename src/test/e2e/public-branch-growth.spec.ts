@@ -94,10 +94,12 @@ test("category and product public pages fall back cleanly when the backend canno
   });
 
   await page.goto("/categoria/fantasma");
-  await expect(page.getByRole("heading", { name: "Category not found" })).toBeVisible({
+  await expect(page.getByRole("heading", { name: "Categoría no encontrada" })).toBeVisible({
     timeout: 10_000,
   });
-  await expect(page.getByText("The category you're looking for doesn't exist.")).toBeVisible();
+  await expect(
+    page.getByText("La categoría que buscas no existe o ya no está disponible.")
+  ).toBeVisible();
 
   await page.goto("/producto/error-product");
   await expect(page.getByRole("heading", { name: "Producto no encontrado" })).toBeVisible({
